@@ -1,22 +1,23 @@
 package ru.neoflex.keycloak.authenticator;
 
 import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.gateway.SmsService;
-import ru.neoflex.keycloak.gateway.SmsServiceFactory;
+import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 
-@Slf4j
 
+@Slf4j
+@RequiredArgsConstructor
 public class SmsAuthenticator implements Authenticator {
+
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -33,8 +34,10 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.BAD_REQUEST));
             return;
         } else if (enteredCode.isEmpty()) {
-            String code = generateAndSaveCode(config, user);
-            sendSms(config, username, code);
+          /*    String code = AuthProviderUtil.prepareOneTimePassword(config, user);
+          //  String code = userAction.prepareOneTimePassword(config, user);
+            sendSms(config, username, code);*/
+            AuthProvider.execute(config, user);
             context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                     context.form().setError("smsAuthSmsCodeEmpty")
                             .createErrorPage(Response.Status.FOUND));
@@ -49,21 +52,6 @@ public class SmsAuthenticator implements Authenticator {
             return;
         }
         context.success();
-    }
-
-    private void sendSms(AuthenticatorConfigModel config, String mobileNumber, String code) {
-        SmsService smsService = SmsServiceFactory.get(config.getConfig());
-        smsService.send(mobileNumber, code);
-    }
-
-    private String generateAndSaveCode(AuthenticatorConfigModel config, UserModel user) {
-        int length = Integer.parseInt(config.getConfig().get(Constants.SmsConstants.CODE_LENGTH));
-        int ttl = Integer.parseInt(config.getConfig().get(Constants.SmsConstants.CODE_TTL));
-        String code = SecretGenerator.getInstance().randomString(length, SecretGenerator.DIGITS);
-        user.setSingleAttribute(Constants.UserAttributes.SMS_CODE, code);
-        user.setSingleAttribute(Constants.UserAttributes.EXPIRY_DATE,
-                Long.toString(System.currentTimeMillis() + (ttl * 1000L)));
-        return code;
     }
 
 
