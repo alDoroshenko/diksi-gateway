@@ -10,7 +10,7 @@ import java.util.Map;
 public class SmsServiceFactory {
 
 	public static SmsService get(Map<String, String> config) {
-		if (Boolean.parseBoolean(config.getOrDefault(Constants.SmsConstants.SIMULATION_MODE, "false"))) {
+		if (Boolean.parseBoolean(config.getOrDefault(Constants.SmsAuthConstants.SIMULATION_MODE, "false"))) {
 			return new SmsService() {
                 @Override
                 public void send(String phoneNumber, String message) {
