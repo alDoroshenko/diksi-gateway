@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.dto;
+package ru.neoflex.keycloak.dto.sms;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class SMSGatewayDTO {
-    String login;
-    String password;
-    String destAddr;
-    Message message;
+public class Message{
+    String type;
+    Data data;
 }
-

@@ -4,9 +4,10 @@ package ru.neoflex.keycloak.gateway;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import ru.neoflex.keycloak.dto.Data;
-import ru.neoflex.keycloak.dto.Message;
-import ru.neoflex.keycloak.dto.SMSGatewayDTO;
+import ru.neoflex.keycloak.dto.sms.Data;
+import ru.neoflex.keycloak.dto.sms.Message;
+import ru.neoflex.keycloak.dto.sms.SMSGatewayDTO;
+import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.Constants;
 
 import java.io.IOException;
@@ -19,13 +20,35 @@ import java.util.Map;
 @Slf4j
 public class SmsServiceImpl implements SmsService {
     private final String senderId;
+    private final String uri;
     private final String login;
     private final String password;
     private static final String SMS_TYPE = "SMS";
 
 
     @Override
-    public void send(String phoneNumber, String message) {
+    public void send(String phoneNumber, String message) throws SmsGatewayException {
+        String smsGatewayJson = prepareSMSGatewayDTO(phoneNumber, message);
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(uri))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(smsGatewayJson))
+                    .build();
+            HttpResponse<String> response = client.send(
+                    request, HttpResponse.BodyHandlers.ofString());
+            log.info("Status code: {}", response.statusCode());
+            if (response.statusCode() != 200) {
+                throw new SmsGatewayException("Bad response from sms gateway");
+            }
+            log.info("Response body: {}", response.body());
+        } catch (IOException | InterruptedException e) {
+            throw new SmsGatewayException("Failed to send sms");
+        }
+    }
+
+    private String prepareSMSGatewayDTO(String phoneNumber, String message) throws SmsGatewayException {
         SMSGatewayDTO smsGatewayDTO = new SMSGatewayDTO(login
                 , password
                 , phoneNumber
@@ -33,30 +56,19 @@ public class SmsServiceImpl implements SmsService {
                 new Data(message, senderId, 10)));
         ObjectMapper objectMapper = new ObjectMapper();
 
-        log.info("smsGatewayDTO: {}", smsGatewayDTO);
-
+        String smsGatewayJson;
         try {
-            String smsGatewayJson = objectMapper.writeValueAsString(smsGatewayDTO);
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://example.com/api/send")) // Замените на реальный URL API
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(smsGatewayJson))
-                    .build();
-            HttpResponse<String> response = client.send(
-                    request, HttpResponse.BodyHandlers.ofString());
-
-            System.out.println("Status code: " + response.statusCode());
-            System.out.println("Response body: " + response.body());
+            smsGatewayJson = objectMapper.writeValueAsString(smsGatewayDTO);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Can't serialize SMSGatewayDTO", e);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to send sms");
+            throw new SmsGatewayException("Can't parse DTO to JSON");
         }
+        log.info("smsGatewayJson: {}", smsGatewayJson);
+        return smsGatewayJson;
     }
 
     public SmsServiceImpl(Map<String, String> config) {
         senderId = config.get(Constants.SmsAuthConstants.SENDER_ID);
+        uri = config.get(Constants.SmsAuthConstants.SMS_URI);
         login = config.get(Constants.SmsAuthConstants.LOGIN);
         password = config.get(Constants.SmsAuthConstants.PASSWORD);
     }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.gateway.SmsService;
 import ru.neoflex.keycloak.gateway.SmsServiceFactory;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 @Slf4j
 public class AuthProvider {
 
-    public static void execute(AuthenticatorConfigModel config, UserModel user) {
+    public static void execute(AuthenticatorConfigModel config, UserModel user) throws SmsGatewayException {
         String code = prepareOneTimePassword(config, user);
         sendSms(config, user.getUsername(), code);
     }
@@ -42,7 +43,7 @@ public class AuthProvider {
         return code;
     }
 
-    private void sendSms(AuthenticatorConfigModel config, String mobileNumber, String code) {
+    private void sendSms(AuthenticatorConfigModel config, String mobileNumber, String code) throws SmsGatewayException {
         SmsService smsService = SmsServiceFactory.get(config.getConfig());
         String message = config.getConfig().get(Constants.SmsAuthConstants.TEXT) + code;
         log.info("Generated message: {}", message);

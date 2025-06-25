@@ -10,6 +10,7 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 
@@ -34,10 +35,14 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.BAD_REQUEST));
             return;
         } else if (enteredCode.isEmpty()) {
-          /*    String code = AuthProviderUtil.prepareOneTimePassword(config, user);
-          //  String code = userAction.prepareOneTimePassword(config, user);
-            sendSms(config, username, code);*/
-            AuthProvider.execute(config, user);
+            try {
+                AuthProvider.execute(config, user);
+            } catch (SmsGatewayException e) {
+                context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
+                        context.form().setError("smsAuthSmsBadResponse")
+                                .createErrorPage(Response.Status.SEE_OTHER));
+                return;
+            }
             context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                     context.form().setError("smsAuthSmsCodeEmpty")
                             .createErrorPage(Response.Status.FOUND));
