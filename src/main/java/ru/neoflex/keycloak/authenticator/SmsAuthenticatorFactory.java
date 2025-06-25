@@ -62,9 +62,10 @@ public class SmsAuthenticatorFactory implements AuthenticatorFactory {
 			new ProviderConfigProperty(Constants.SmsAuthConstants.CODE_TTL, "Time-to-live", "The time to live in seconds for the code to be valid.", ProviderConfigProperty.STRING_TYPE, "300"),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.SENDER_ID, "SenderId", "The sender ID is displayed as the message sender on the receiving device.", ProviderConfigProperty.STRING_TYPE, "Дикси"),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.SIMULATION_MODE, "Simulation mode", "In simulation mode, the SMS won't be sent, but printed to the server logs", ProviderConfigProperty.BOOLEAN_TYPE, true),
+			new ProviderConfigProperty(Constants.SmsAuthConstants.SMS_URI, "SMS URI", "URI of SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.LOGIN, "Login", "Login for SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.PASSWORD, "Password", "Password for SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
-		    new ProviderConfigProperty(Constants.SmsAuthConstants.TEXT, "Password", "Password for SMS provider", ProviderConfigProperty.STRING_TYPE, "")
+		    new ProviderConfigProperty(Constants.SmsAuthConstants.TEXT, "Message", "Message text for client", ProviderConfigProperty.STRING_TYPE, "")
 		);
 	}
 

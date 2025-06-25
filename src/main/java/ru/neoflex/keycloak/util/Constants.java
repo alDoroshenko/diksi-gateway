@@ -11,6 +11,7 @@ public class Constants {
          String CODE_TTL = "ttl";
          String SENDER_ID = "senderId";
          String LOGIN = "login";
+         String SMS_URI = "smsURI";
          String PASSWORD = "password";
          String SIMULATION_MODE = "simulation";
          String TEXT ="text";

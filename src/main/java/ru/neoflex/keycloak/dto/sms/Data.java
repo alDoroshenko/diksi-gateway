@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.dto;
+package ru.neoflex.keycloak.dto.sms;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
