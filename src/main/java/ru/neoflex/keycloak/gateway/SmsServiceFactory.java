@@ -3,6 +3,7 @@ package ru.neoflex.keycloak.gateway;
 import lombok.extern.slf4j.Slf4j;
 import ru.neoflex.keycloak.util.Constants;
 
+import java.net.http.HttpClient;
 import java.util.Map;
 
 
@@ -18,7 +19,7 @@ public class SmsServiceFactory {
                 }
             };
 		} else {
-			return new SmsServiceImpl(config);
+			return new SmsServiceImpl(config, HttpClient.newHttpClient());
 		}
 	}
 

@@ -23,7 +23,6 @@ public class SmsAuthenticator implements Authenticator {
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        KeycloakSession session = context.getSession();
         UserModel user = context.getUser();
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
@@ -56,6 +55,7 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.BAD_REQUEST));
             return;
         }
+        log.info("User: {} succsesfuly login", username);
         context.success();
     }
 
