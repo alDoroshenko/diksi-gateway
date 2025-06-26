@@ -19,24 +19,25 @@ import java.util.Map;
 
 @Slf4j
 public class SmsServiceImpl implements SmsService {
+
     private final String senderId;
     private final String uri;
     private final String login;
     private final String password;
     private static final String SMS_TYPE = "SMS";
+    private final HttpClient httpClient;
 
 
     @Override
     public void send(String phoneNumber, String message) throws SmsGatewayException {
         String smsGatewayJson = prepareSMSGatewayDTO(phoneNumber, message);
         try {
-            HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(uri))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(smsGatewayJson))
                     .build();
-            HttpResponse<String> response = client.send(
+            HttpResponse<String> response = httpClient.send(
                     request, HttpResponse.BodyHandlers.ofString());
             log.info("Status code: {}", response.statusCode());
             if (response.statusCode() != 200) {
@@ -66,10 +67,11 @@ public class SmsServiceImpl implements SmsService {
         return smsGatewayJson;
     }
 
-    public SmsServiceImpl(Map<String, String> config) {
+    public SmsServiceImpl(Map<String, String> config, HttpClient httpClient) {
         senderId = config.get(Constants.SmsAuthConstants.SENDER_ID);
         uri = config.get(Constants.SmsAuthConstants.SMS_URI);
         login = config.get(Constants.SmsAuthConstants.LOGIN);
         password = config.get(Constants.SmsAuthConstants.PASSWORD);
+        this.httpClient = httpClient;
     }
 }
