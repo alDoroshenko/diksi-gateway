@@ -1,16 +1,14 @@
 package ru.neoflex.keycloak.gateway;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.gateway.sms.SmsServiceImpl;
 import ru.neoflex.keycloak.util.Constants;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.smallrye.common.constraint.Assert.assertTrue;

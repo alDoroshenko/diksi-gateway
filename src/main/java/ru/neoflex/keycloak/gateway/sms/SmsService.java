@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.gateway;
+package ru.neoflex.keycloak.gateway.sms;
 
 
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;

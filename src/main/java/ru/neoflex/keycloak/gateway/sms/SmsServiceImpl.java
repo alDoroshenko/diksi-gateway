@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.gateway;
+package ru.neoflex.keycloak.gateway.sms;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
