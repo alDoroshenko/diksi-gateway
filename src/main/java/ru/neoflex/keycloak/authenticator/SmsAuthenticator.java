@@ -19,7 +19,6 @@ import ru.neoflex.keycloak.util.Constants;
 @RequiredArgsConstructor
 public class SmsAuthenticator implements Authenticator {
 
-
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
@@ -62,8 +61,8 @@ public class SmsAuthenticator implements Authenticator {
 
     private boolean validateCode(UserModel user, String enteredCode) {
         String expectedCode = user.getFirstAttribute(Constants.UserAttributes.SMS_CODE);
-        Long expiryDate = Long.parseLong(user.getFirstAttribute(Constants.UserAttributes.EXPIRY_DATE));
-        Long currentDate = System.currentTimeMillis();
+        long expiryDate = Long.parseLong(user.getFirstAttribute(Constants.UserAttributes.EXPIRY_DATE));
+        long currentDate = System.currentTimeMillis();
         log.info("Expiry date: {};  current date: {}", expiryDate, currentDate);
 
         if (!expectedCode.equals(enteredCode)) {

@@ -6,11 +6,15 @@ import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
-import ru.neoflex.keycloak.gateway.SmsService;
-import ru.neoflex.keycloak.gateway.SmsServiceFactory;
+import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
+import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
+import ru.neoflex.keycloak.gateway.sms.SmsService;
+import ru.neoflex.keycloak.gateway.sms.SmsServiceFactory;
+import ru.neoflex.keycloak.model.ManzanaUser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @UtilityClass
 @Slf4j
@@ -19,6 +23,11 @@ public class AuthProvider {
     public static void execute(AuthenticatorConfigModel config, UserModel user) throws SmsGatewayException {
         String code = prepareOneTimePassword(config, user);
         sendSms(config, user.getUsername(), code);
+        ManzanaUser manzanaUser = new ManzanaUser(user);
+        manzanaUser = searchManzanaUser(config, manzanaUser);
+        if (manzanaUser != null) {
+            saveAttributes(getAttributesFromManzana(manzanaUser), user);
+        }
     }
 
     public static void saveAttributes(Map<String, String> attributes, UserModel user) {
@@ -32,8 +41,8 @@ public class AuthProvider {
     }
 
     private String prepareOneTimePassword(AuthenticatorConfigModel config, UserModel user) {
-        int length = Integer.parseInt(config.getConfig().get(Constants.SmsAuthConstants.CODE_LENGTH));
-        int ttl = Integer.parseInt(config.getConfig().get(Constants.SmsAuthConstants.CODE_TTL));
+        int length = Integer.parseInt(config.getConfig().getOrDefault(Constants.SmsAuthConstants.CODE_LENGTH, "4"));
+        int ttl = Integer.parseInt(config.getConfig().getOrDefault(Constants.SmsAuthConstants.CODE_TTL, "300"));
         String code = generateCode(length);
         Map<String, String> attributes = new HashMap<>();
         attributes.put(Constants.UserAttributes.SMS_CODE, code);
@@ -50,5 +59,23 @@ public class AuthProvider {
         smsService.send(mobileNumber, message);
     }
 
+    private ManzanaUser registerManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
+        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
+        UUID sessionId = manzanaService.identify();
+        return manzanaService.register(sessionId, manzanaUser);
+    }
+    private ManzanaUser searchManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
+        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
+        UUID sessionId = manzanaService.identify();
+        return manzanaService.getUser(sessionId, manzanaUser);
+    }
+
+    private Map<String, String> getAttributesFromManzana (ManzanaUser manzanaUser){
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put(Constants.UserAttributes.FIRST_NAME, manzanaUser.getFirstName());
+        attributes.put(Constants.UserAttributes.LAST_NAME, manzanaUser.getLastName());
+        return attributes;
+
+    }
 
 }

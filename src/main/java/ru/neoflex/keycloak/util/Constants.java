@@ -26,6 +26,8 @@ public class Constants {
     public interface UserAttributes{
         String SMS_CODE = "smsCode";
         String EXPIRY_DATE = "expiryDate";
+        String FIRST_NAME = "firstName";
+        String LAST_NAME = "lastName";
     }
 
     public interface KeycloakConfiguration{

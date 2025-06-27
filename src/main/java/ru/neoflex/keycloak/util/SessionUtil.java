@@ -21,7 +21,7 @@ public class SessionUtil {
                 .filter(execution -> {
                     String providerId = execution.getAuthenticator();
                     log.info("providerId: " + providerId);
-                    return authenticatorId.equals(providerId);
+                    return authenticatorId.equalsIgnoreCase(providerId);
                 })
                 .findFirst()
                 .map(execution -> {

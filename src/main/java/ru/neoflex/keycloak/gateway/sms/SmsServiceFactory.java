@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.gateway;
+package ru.neoflex.keycloak.gateway.sms;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.neoflex.keycloak.util.Constants;
@@ -12,12 +12,9 @@ public class SmsServiceFactory {
 
 	public static SmsService get(Map<String, String> config) {
 		if (Boolean.parseBoolean(config.getOrDefault(Constants.SmsAuthConstants.SIMULATION_MODE, "false"))) {
-			return new SmsService() {
-                @Override
-                public void send(String phoneNumber, String message) {
-                    log.warn(String.format("***** SIMULATION MODE ***** Would send SMS to %s with text: %s", phoneNumber, message));
-                }
-            };
+			return (phoneNumber, message) ->
+					log.info("***** SIMULATION MODE ***** Would send SMS to {} with text: {}",
+							phoneNumber, message);
 		} else {
 			return new SmsServiceImpl(config, HttpClient.newHttpClient());
 		}
