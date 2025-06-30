@@ -5,9 +5,9 @@ import ru.neoflex.keycloak.model.ManzanaUser;
 import java.util.UUID;
 
 public interface ManzanaService {
-    UUID identify();
-    ManzanaUser getUser(UUID sessionId, ManzanaUser user);
-    ManzanaUser register(UUID sessionId, ManzanaUser user);
+    //UUID identify();
+    ManzanaUser getUser( ManzanaUser user);
+    ManzanaUser register( ManzanaUser user);
 
 
 }

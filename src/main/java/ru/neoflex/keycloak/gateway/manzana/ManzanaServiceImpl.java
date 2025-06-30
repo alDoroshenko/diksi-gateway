@@ -11,26 +11,28 @@ import java.util.UUID;
 @Slf4j
 public class ManzanaServiceImpl implements ManzanaService {
     private final UUID partnerId;
+    private final UUID sessionId;
+    private final UUID virtualCardTypeId;
     private final HttpClient httpClient;
 
 
-    @Override
-    public UUID identify() {
-        return UUID.randomUUID();
-    }
 
     @Override
-    public ManzanaUser getUser(UUID sessionId, ManzanaUser user) {
+    public ManzanaUser getUser( ManzanaUser user) {
         return null;
     }
 
     @Override
-    public ManzanaUser register(UUID sessionId, ManzanaUser user) {
+    public ManzanaUser register( ManzanaUser user) {
         return null;
     }
 
     public ManzanaServiceImpl(Map<String, String> config, HttpClient httpClient) {
-        partnerId = UUID.fromString(config.getOrDefault(Constants.SmsAuthConstants.SENDER_ID,
+        partnerId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.PARTNER_ID,
+                UUID.randomUUID().toString()));
+        sessionId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.SESSION_ID,
+                UUID.randomUUID().toString()));
+        virtualCardTypeId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.VIRTUAL_CARD_TYPE_ID,
                 UUID.randomUUID().toString()));
         this.httpClient = httpClient;
     }

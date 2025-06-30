@@ -65,7 +65,11 @@ public class SmsAuthenticatorFactory implements AuthenticatorFactory {
 			new ProviderConfigProperty(Constants.SmsAuthConstants.SMS_URI, "SMS URI", "URI of SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.LOGIN, "Login", "Login for SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
 			new ProviderConfigProperty(Constants.SmsAuthConstants.PASSWORD, "Password", "Password for SMS provider", ProviderConfigProperty.STRING_TYPE, ""),
-		    new ProviderConfigProperty(Constants.SmsAuthConstants.TEXT, "Message", "Message text for client", ProviderConfigProperty.STRING_TYPE, "")
+		    new ProviderConfigProperty(Constants.SmsAuthConstants.TEXT, "Message", "Message text for client", ProviderConfigProperty.STRING_TYPE, ""),
+			new ProviderConfigProperty(Constants.ManzanaConstants.SESSION_ID, "Session Id", "Session Id for Manzana admin(UUID)", ProviderConfigProperty.STRING_TYPE, ""),
+			new ProviderConfigProperty(Constants.ManzanaConstants.PARTNER_ID, "Partner Id", "Partner Id for Manzana admin(UUID)", ProviderConfigProperty.STRING_TYPE, ""),
+			new ProviderConfigProperty(Constants.ManzanaConstants.VIRTUAL_CARD_TYPE_ID, "Virtual Card Type Id", "Virtual Card Type Id for Manzana(UUID)", ProviderConfigProperty.STRING_TYPE, "")
+
 		);
 	}
 

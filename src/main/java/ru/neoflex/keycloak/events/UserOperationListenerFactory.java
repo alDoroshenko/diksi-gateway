@@ -8,13 +8,13 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 @AutoService(EventListenerProviderFactory.class)
-public class CreateUserListenerFactory  implements EventListenerProviderFactory {
-    public static final String PROVIDER_ID = "create-user";
+public class UserOperationListenerFactory implements EventListenerProviderFactory {
+    public static final String PROVIDER_ID = "user-operation";
 
 
     @Override
     public EventListenerProvider create(KeycloakSession session) {
-        return new CreateUserListener(session);
+        return new UserOperationListener(session);
     }
 
     @Override

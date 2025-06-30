@@ -61,19 +61,23 @@ public class AuthProvider {
 
     private ManzanaUser registerManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
         ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
-        UUID sessionId = manzanaService.identify();
-        return manzanaService.register(sessionId, manzanaUser);
-    }
-    private ManzanaUser searchManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
-        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
-        UUID sessionId = manzanaService.identify();
-        return manzanaService.getUser(sessionId, manzanaUser);
+        //  UUID sessionId = manzanaService.identify();
+        return manzanaService.register(manzanaUser);
     }
 
-    private Map<String, String> getAttributesFromManzana (ManzanaUser manzanaUser){
+    private ManzanaUser searchManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
+        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
+        // UUID sessionId = manzanaService.identify();
+        return manzanaService.getUser(manzanaUser);
+    }
+
+    private Map<String, String> getAttributesFromManzana(ManzanaUser manzanaUser) {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(Constants.UserAttributes.FIRST_NAME, manzanaUser.getFirstName());
         attributes.put(Constants.UserAttributes.LAST_NAME, manzanaUser.getLastName());
+        attributes.put(Constants.UserAttributes.EMAIL, manzanaUser.getEmail());
+        attributes.put(Constants.UserAttributes.BIRTHDAY, manzanaUser.getBirthDate());
+        attributes.put(Constants.UserAttributes.REGION, manzanaUser.getRegion().toString());
         return attributes;
 
     }

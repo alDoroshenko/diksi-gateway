@@ -17,6 +17,13 @@ public class Constants {
          String TEXT ="text";
     }
 
+    public interface ManzanaConstants {
+        String SESSION_ID = "sessionId";
+        String PARTNER_ID = "partnerId";
+        String VIRTUAL_CARD_TYPE_ID = "virtualCardTypeId";
+    }
+
+
     public interface RequestConstants{
         String SMS_CODE = "smsCode";
         String USERNAME = "username";
@@ -28,6 +35,9 @@ public class Constants {
         String EXPIRY_DATE = "expiryDate";
         String FIRST_NAME = "firstName";
         String LAST_NAME = "lastName";
+        String EMAIL = "email";
+        String BIRTHDAY = "birthday";
+        String REGION = "region";
     }
 
     public interface KeycloakConfiguration{
