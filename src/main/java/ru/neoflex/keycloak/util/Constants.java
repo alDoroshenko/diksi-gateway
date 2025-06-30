@@ -18,6 +18,7 @@ public class Constants {
     }
 
     public interface ManzanaConstants {
+        String MANZANA_URI = "manzanaURI";
         String SESSION_ID = "sessionId";
         String PARTNER_ID = "partnerId";
         String VIRTUAL_CARD_TYPE_ID = "virtualCardTypeId";

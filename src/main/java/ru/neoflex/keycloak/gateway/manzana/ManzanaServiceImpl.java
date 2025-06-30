@@ -1,6 +1,7 @@
 package ru.neoflex.keycloak.gateway.manzana;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Constants;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @Slf4j
 public class ManzanaServiceImpl implements ManzanaService {
+    private final String uri;
     private final UUID partnerId;
     private final UUID sessionId;
     private final UUID virtualCardTypeId;
@@ -27,13 +29,11 @@ public class ManzanaServiceImpl implements ManzanaService {
         return null;
     }
 
-    public ManzanaServiceImpl(Map<String, String> config, HttpClient httpClient) {
-        partnerId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.PARTNER_ID,
-                UUID.randomUUID().toString()));
-        sessionId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.SESSION_ID,
-                UUID.randomUUID().toString()));
-        virtualCardTypeId = UUID.fromString(config.getOrDefault(Constants.ManzanaConstants.VIRTUAL_CARD_TYPE_ID,
-                UUID.randomUUID().toString()));
+    public ManzanaServiceImpl(ManzanaConfiguration config, HttpClient httpClient) {
+        partnerId = config.getPartnerId();
+        sessionId = config.getSessionId();
+        virtualCardTypeId = config.getVirtualCardTypeId();
+        uri = config.getUri();
         this.httpClient = httpClient;
     }
 }

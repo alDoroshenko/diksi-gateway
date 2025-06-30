@@ -10,6 +10,8 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.ManzanaConfiguration;
+import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
@@ -34,7 +36,9 @@ public class SmsAuthenticator implements Authenticator {
             return;
         } else if (enteredCode.isEmpty()) {
             try {
-                AuthProvider.execute(config, user);
+                ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
+                SmsConfiguration smsConfig = new SmsConfiguration(config);
+                AuthProvider.execute(smsConfig, manzanaConfig, user);
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                         context.form().setError("smsAuthSmsBadResponse")
@@ -61,7 +65,17 @@ public class SmsAuthenticator implements Authenticator {
 
     private boolean validateCode(UserModel user, String enteredCode) {
         String expectedCode = user.getFirstAttribute(Constants.UserAttributes.SMS_CODE);
-        long expiryDate = Long.parseLong(user.getFirstAttribute(Constants.UserAttributes.EXPIRY_DATE));
+        long expiryDate;
+        try {
+            expiryDate = Long.parseLong(user.getFirstAttribute(Constants.UserAttributes.EXPIRY_DATE));
+        } catch (NumberFormatException e) {
+            log.error("Invalid expiry date: {}", e.getMessage());
+            return false;
+        }
+        if (expectedCode.isBlank() || expiryDate <= 0) {
+            log.error("Invalid expiry date or expectedCode");
+            return false;
+        }
         long currentDate = System.currentTimeMillis();
         log.info("Expiry date: {};  current date: {}", expiryDate, currentDate);
 

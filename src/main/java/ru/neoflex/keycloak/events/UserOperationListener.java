@@ -11,6 +11,8 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.ManzanaConfiguration;
+import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
@@ -51,24 +53,27 @@ public class UserOperationListener implements EventListenerProvider {
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
+        ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
+        SmsConfiguration smsConfig = new SmsConfiguration(config);
         try {
-            AuthProvider.execute(config, user);
+            AuthProvider.execute(smsConfig, manzanaConfig, user);
         } catch (SmsGatewayException e) {
             throw new RuntimeException("Not OK response from sms gateway");
         }
     }
 
-    private void updateAdminUser(AdminEvent adminEvent){
+    private void updateAdminUser(AdminEvent adminEvent) {
         UserModel user = getUserFromAdminEvent(adminEvent);
         log.info("User {} updated", user.getUsername());
         RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        ManzanaRegistrationProvider.execute(config, user);
+        ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
+        ManzanaRegistrationProvider.execute(manzanaConfig, user);
     }
 
-    private  UserModel getUserFromAdminEvent(AdminEvent adminEvent){
+    private UserModel getUserFromAdminEvent(AdminEvent adminEvent) {
         String resourcePath = adminEvent.getResourcePath();
         String userId = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
         return session.users().getUserById(session.getContext().getRealm(), userId);
