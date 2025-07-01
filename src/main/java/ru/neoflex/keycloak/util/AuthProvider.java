@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.ManzanaConfiguration;
+import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
@@ -14,17 +16,16 @@ import ru.neoflex.keycloak.model.ManzanaUser;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @UtilityClass
 @Slf4j
 public class AuthProvider {
 
-    public static void execute(AuthenticatorConfigModel config, UserModel user) throws SmsGatewayException {
-        String code = prepareOneTimePassword(config, user);
-        sendSms(config, user.getUsername(), code);
+    public static void execute(SmsConfiguration smsConfig, ManzanaConfiguration manzanaConfig, UserModel user) throws SmsGatewayException {
+        String code = prepareOneTimePassword(smsConfig, user);
+        sendSms(smsConfig, user.getUsername(), code);
         ManzanaUser manzanaUser = new ManzanaUser(user);
-        manzanaUser = searchManzanaUser(config, manzanaUser);
+        manzanaUser = searchManzanaUser(manzanaConfig, manzanaUser);
         if (manzanaUser != null) {
             saveAttributes(getAttributesFromManzana(manzanaUser), user);
         }
@@ -40,9 +41,9 @@ public class AuthProvider {
         return SecretGenerator.getInstance().randomString(length, SecretGenerator.DIGITS);
     }
 
-    private String prepareOneTimePassword(AuthenticatorConfigModel config, UserModel user) {
-        int length = Integer.parseInt(config.getConfig().getOrDefault(Constants.SmsAuthConstants.CODE_LENGTH, "4"));
-        int ttl = Integer.parseInt(config.getConfig().getOrDefault(Constants.SmsAuthConstants.CODE_TTL, "300"));
+    private String prepareOneTimePassword(SmsConfiguration config, UserModel user) {
+        int length = config.getCodeLenght();
+        int ttl = config.getTtl();
         String code = generateCode(length);
         Map<String, String> attributes = new HashMap<>();
         attributes.put(Constants.UserAttributes.SMS_CODE, code);
@@ -52,28 +53,27 @@ public class AuthProvider {
         return code;
     }
 
-    private void sendSms(AuthenticatorConfigModel config, String mobileNumber, String code) throws SmsGatewayException {
-        SmsService smsService = SmsServiceFactory.get(config.getConfig());
-        String message = config.getConfig().get(Constants.SmsAuthConstants.TEXT) + code;
+    private void sendSms(SmsConfiguration config, String mobileNumber, String code) throws SmsGatewayException {
+        SmsService smsService = SmsServiceFactory.get(config);
+        String message = config.getMessage() + code;
         log.info("Generated message: {}", message);
         smsService.send(mobileNumber, message);
     }
 
-    private ManzanaUser registerManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
-        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
-        UUID sessionId = manzanaService.identify();
-        return manzanaService.register(sessionId, manzanaUser);
-    }
-    private ManzanaUser searchManzanaUser(AuthenticatorConfigModel config, ManzanaUser manzanaUser) {
-        ManzanaService manzanaService = ManzanaServiceFactory.get(config.getConfig());
-        UUID sessionId = manzanaService.identify();
-        return manzanaService.getUser(sessionId, manzanaUser);
+
+    private ManzanaUser searchManzanaUser(ManzanaConfiguration config, ManzanaUser manzanaUser) {
+        ManzanaService manzanaService = ManzanaServiceFactory.get(config);
+        // UUID sessionId = manzanaService.identify();
+        return manzanaService.getUser(manzanaUser);
     }
 
-    private Map<String, String> getAttributesFromManzana (ManzanaUser manzanaUser){
+    private Map<String, String> getAttributesFromManzana(ManzanaUser manzanaUser) {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(Constants.UserAttributes.FIRST_NAME, manzanaUser.getFirstName());
         attributes.put(Constants.UserAttributes.LAST_NAME, manzanaUser.getLastName());
+        attributes.put(Constants.UserAttributes.EMAIL, manzanaUser.getEmail());
+        attributes.put(Constants.UserAttributes.BIRTHDAY, manzanaUser.getBirthDate());
+        attributes.put(Constants.UserAttributes.REGION, manzanaUser.getRegion().toString());
         return attributes;
 
     }

@@ -4,18 +4,17 @@ package ru.neoflex.keycloak.gateway.sms;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.dto.sms.Data;
 import ru.neoflex.keycloak.dto.sms.Message;
 import ru.neoflex.keycloak.dto.sms.SMSGatewayDTO;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
-import ru.neoflex.keycloak.util.Constants;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
 
 @Slf4j
 public class SmsServiceImpl implements SmsService {
@@ -67,11 +66,11 @@ public class SmsServiceImpl implements SmsService {
         return smsGatewayJson;
     }
 
-    public SmsServiceImpl(Map<String, String> config, HttpClient httpClient) {
-        senderId = config.get(Constants.SmsAuthConstants.SENDER_ID);
-        uri = config.get(Constants.SmsAuthConstants.SMS_URI);
-        login = config.get(Constants.SmsAuthConstants.LOGIN);
-        password = config.get(Constants.SmsAuthConstants.PASSWORD);
+    public SmsServiceImpl(SmsConfiguration config, HttpClient httpClient) {
+        senderId = config.getSenderId();
+        uri = config.getUri();
+        login = config.getLogin();
+        password = config.getPassword();
         this.httpClient = httpClient;
     }
 }

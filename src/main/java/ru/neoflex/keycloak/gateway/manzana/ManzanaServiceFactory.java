@@ -1,43 +1,47 @@
 package ru.neoflex.keycloak.gateway.manzana;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Constants;
 
 import java.net.http.HttpClient;
+import java.time.Duration;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 public class ManzanaServiceFactory {
-    public static ManzanaService get(Map<String, String> config) {
-        if (Boolean.parseBoolean(config.getOrDefault(Constants.SmsAuthConstants.SIMULATION_MODE,
-                "false"))) {
+    private static final HttpClient httpClient = HttpClient
+            .newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    public static ManzanaService get(ManzanaConfiguration config) {
+
+        if (config.isSimulationMode()) {
             return new ManzanaService() {
-                @Override
-                public UUID identify() {
-                    UUID uuid = UUID.randomUUID();
-                    log.info("***** SIMULATION MODE *****,identify method was called," +
-                            " session Id:{} generated", uuid);
-                    return uuid;
-                }
 
                 @Override
-                public ManzanaUser getUser(UUID sessionId, ManzanaUser user) {
+                public ManzanaUser getUser(ManzanaUser user) {
+                    user.setEmail(UUID.randomUUID().toString().substring(0, 7) + "TestMail@com");
+                    user.setFirstName("Simulator");
+                    user.setLastName("SimulatorLN");
+                    user.setBirthDate(new Date().toString());
+                    user.setRegion(UUID.randomUUID().toString());
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
                     return user;
                 }
 
                 @Override
-                public ManzanaUser register(UUID sessionId, ManzanaUser user) {
+                public ManzanaUser register(ManzanaUser user) {
                     log.info("***** SIMULATION MODE *****,register method was called," +
                             "register in manzana user: {}", user);
                     return user;
                 }
             };
-        }
-        else return new ManzanaServiceImpl(config,
-                HttpClient.newHttpClient());
+        } else return new ManzanaServiceImpl(config, httpClient);
     }
 }
