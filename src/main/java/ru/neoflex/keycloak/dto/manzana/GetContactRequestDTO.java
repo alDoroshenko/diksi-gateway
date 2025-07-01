@@ -15,6 +15,4 @@ public class GetContactRequestDTO {
     UUID sessionId;
     String mobilePhone;
     String emailAddress;
-    int take;
-    int skip;
 }

@@ -1,9 +1,6 @@
 package ru.neoflex.keycloak.dto.manzana;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,6 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class GetContactResponseDTO {
     UUID id;
     String lastName;
@@ -21,7 +19,7 @@ public class GetContactResponseDTO {
     String middleName;
     String fullName;
     int genderCode;
-    LocalDate birthDate;
+    String birthDate;
     int familyStatusCode;
     int hasChildrenCode;
     String emailAddress;
@@ -37,7 +35,7 @@ public class GetContactResponseDTO {
     BigDecimal summDiscounted;
     BigDecimal discountSumm;
     int quantity;
-    LocalDate registrationDate;
+    String registrationDate;
     UUID partnerId;
     String partnerName;
     UUID orgUnitId;

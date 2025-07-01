@@ -13,6 +13,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.SmsConfiguration;
+import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
@@ -59,6 +60,8 @@ public class UserOperationListener implements EventListenerProvider {
             AuthProvider.execute(smsConfig, manzanaConfig, user);
         } catch (SmsGatewayException e) {
             throw new RuntimeException("Not OK response from sms gateway");
+        } catch (ManzanaGatewayException e) {
+            throw new RuntimeException("Not OK response from manzana");
         }
     }
 

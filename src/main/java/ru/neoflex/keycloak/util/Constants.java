@@ -39,6 +39,7 @@ public class Constants {
         String EMAIL = "email";
         String BIRTHDAY = "birthday";
         String REGION = "region";
+        String MANZANA_ID = "manzanaId";
     }
 
     public interface KeycloakConfiguration{

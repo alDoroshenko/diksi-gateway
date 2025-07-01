@@ -11,6 +11,7 @@ import ru.neoflex.keycloak.dto.sms.SMSGatewayDTO;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -39,7 +40,7 @@ public class SmsServiceImpl implements SmsService {
             HttpResponse<String> response = httpClient.send(
                     request, HttpResponse.BodyHandlers.ofString());
             log.info("Status code: {}", response.statusCode());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                 throw new SmsGatewayException("Bad response from sms gateway");
             }
             log.info("Response body: {}", response.body());
