@@ -7,6 +7,7 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.SmsConfiguration;
+import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
@@ -21,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class AuthProvider {
 
-    public static void execute(SmsConfiguration smsConfig, ManzanaConfiguration manzanaConfig, UserModel user) throws SmsGatewayException {
+    public static void execute(SmsConfiguration smsConfig, ManzanaConfiguration manzanaConfig, UserModel user) throws SmsGatewayException, ManzanaGatewayException {
         String code = prepareOneTimePassword(smsConfig, user);
         sendSms(smsConfig, user.getUsername(), code);
         ManzanaUser manzanaUser = new ManzanaUser(user);
@@ -61,7 +62,7 @@ public class AuthProvider {
     }
 
 
-    private ManzanaUser searchManzanaUser(ManzanaConfiguration config, ManzanaUser manzanaUser) {
+    private ManzanaUser searchManzanaUser(ManzanaConfiguration config, ManzanaUser manzanaUser) throws ManzanaGatewayException {
         ManzanaService manzanaService = ManzanaServiceFactory.get(config);
         // UUID sessionId = manzanaService.identify();
         return manzanaService.getUser(manzanaUser);
@@ -73,7 +74,7 @@ public class AuthProvider {
         attributes.put(Constants.UserAttributes.LAST_NAME, manzanaUser.getLastName());
         attributes.put(Constants.UserAttributes.EMAIL, manzanaUser.getEmail());
         attributes.put(Constants.UserAttributes.BIRTHDAY, manzanaUser.getBirthDate());
-        attributes.put(Constants.UserAttributes.REGION, manzanaUser.getRegion().toString());
+        //attributes.put(Constants.UserAttributes.REGION, manzanaUser.getRegion().toString());
         return attributes;
 
     }

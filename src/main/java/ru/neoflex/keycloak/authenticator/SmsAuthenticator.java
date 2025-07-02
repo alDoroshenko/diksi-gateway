@@ -12,6 +12,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.SmsConfiguration;
+import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
@@ -42,6 +43,11 @@ public class SmsAuthenticator implements Authenticator {
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                         context.form().setError("smsAuthSmsBadResponse")
+                                .createErrorPage(Response.Status.SEE_OTHER));
+                return;
+            } catch (ManzanaGatewayException e) {
+                context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
+                        context.form().setError("manzanaBadResponse")
                                 .createErrorPage(Response.Status.SEE_OTHER));
                 return;
             }

@@ -29,7 +29,8 @@ public class ManzanaServiceFactory {
                     user.setFirstName("Simulator");
                     user.setLastName("SimulatorLN");
                     user.setBirthDate(new Date().toString());
-                    user.setRegion(UUID.randomUUID().toString());
+                 //   user.setRegion(UUID.randomUUID().toString());
+                    user.setId(UUID.randomUUID().toString());
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
                     return user;
