@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.user;
+package ru.neoflex.keycloak.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
@@ -13,135 +13,127 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
+import org.keycloak.storage.user.UserRegistrationProvider;
 import org.mindrot.jbcrypt.BCrypt;
+import ru.neoflex.keycloak.util.Constants;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 @Slf4j
-
 public class ExternalUserStorageProvider implements
         UserStorageProvider
         , UserLookupProvider
         , CredentialInputValidator
-        , UserQueryProvider {
+        , UserQueryProvider
+        , UserRegistrationProvider {
     private final KeycloakSession session;
     private final ComponentModel model;
     private final UserRepository userRepository;
+    private Map<String, UserModel> loadedUsers = new HashMap<>();
 
     public ExternalUserStorageProvider(KeycloakSession session, ComponentModel model) {
-        log.debug("Creating new PropertyFileUserStorageProvider instance");
+        log.info("Creating new PropertyFileUserStorageProvider instance");
         this.session = session;
         this.model = model;
-        this.userRepository = new UserRepository("jdbc:postgresql://postgres:5432/postgres", "postgres", "postgres");
+        this.userRepository = new UserRepository(model.get(Constants.UserStorage.URL),
+                model.get(Constants.UserStorage.USERNAME), model.get(Constants.UserStorage.PASSWORD));
         //this.userRepository = userRepository;
     }
 
     @Override
     public void close() {
-
+        userRepository.close();
     }
 
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
-        log.info("getUserByid: {}", id);
         String externalId = StorageId.externalId(id);
-        log.info("externalId: {}", externalId);
-       ExteranalUser exteranalUser = userRepository.getUserById(externalId);
-        if (exteranalUser != null) {
-            return new ExternalUserAdapter(session, realm, model, exteranalUser);
-        } else {
-            log.error("Failed to get user by id");
-        }
-        log.info("could not find  by id: {}", externalId);
-        return null;
-        //return getUserByUsername(realm, externalId);
+        return getUserByUsername(realm, externalId);
     }
-
 
     @Override
     public UserModel getUserByUsername(RealmModel realm, String username) {
-        log.info("getUserByUsername: {}", username);
-
-        ExteranalUser exteranalUser = userRepository.getUserByUsername(username);
-        if (exteranalUser != null) {
-            return new ExternalUserAdapter(session, realm, model, exteranalUser);
-        } else {
-            log.error("Failed to get user by username");
+        UserModel user = loadedUsers.get(username);
+        if (user == null) {
+            ExteranalUser exteranalUser = userRepository.getUserByUsername(username);
+            if (exteranalUser != null) {
+                user = new ExternalUserAdapter(session, realm, model, exteranalUser);
+                loadedUsers.put(username, user);
+                return user;
+            }
+            log.info("could not find getUserByUsername: {}", username);
         }
-        log.info("could not find getUserByUsername: {}", username);
-        return null;
+        return user;
     }
 
 
     @Override
     public UserModel getUserByEmail(RealmModel realm, String email) {
-        log.info("getUserByEmail: {}", email);
-        ExteranalUser exteranalUser = userRepository.getUserByEmail(email);
-        if (exteranalUser != null) {
-            return new ExternalUserAdapter(session, realm, model, exteranalUser);
-        } else {
-            log.error("Failed to get user by email");
+        UserModel user = loadedUsers.get(email);
+        if (user == null) {
+            ExteranalUser exteranalUser = userRepository.getUserByEmail(email);
+            if (exteranalUser != null) {
+                user = new ExternalUserAdapter(session, realm, model, exteranalUser);
+                loadedUsers.put(email, user);
+                return user;
+            }
+            log.info("could not find by email: {}", email);
         }
-        log.info("could not find by email: {}", email);
-        return null;
+        return user;
     }
 
     @Override
     public boolean supportsCredentialType(String credentialType) {
-        log.debug("Checking support for credential type: {}", credentialType);
+        log.info("Checking support for credential type: {}", credentialType);
         boolean supported = PasswordCredentialModel.TYPE.equals(credentialType);
-        log.debug("Credential type {} supported: {}", credentialType, supported);
+        log.info("Credential type {} supported: {}", credentialType, supported);
         return supported;
     }
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        log.debug("Checking if credential type {} is configured for user: {}", credentialType, user.getUsername());
+        log.info("Checking if credential type {} is configured for user: {}", credentialType, user.getUsername());
 
         boolean configured = supportsCredentialType(credentialType) &&
                 userRepository.getUserByUsername(user.getUsername()) != null;
-        log.debug("Credential type {} configured for user {}: {}", credentialType, user.getUsername(), configured);
+        log.info("Credential type {} configured for user {}: {}", credentialType, user.getUsername(), configured);
         return configured;
 
     }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
-        log.debug("Validating credential for user: {}", user.getUsername());
+        log.info("Validating credential for user: {}", user.getUsername());
 
         if (!supportsCredentialType(input.getType())) {
-            log.debug("Credential type not supported: {}", input.getType());
+            log.info("Credential type not supported: {}", input.getType());
             return false;
         }
-
         ExteranalUser exteranalUser = userRepository.getUserByUsername(user.getUsername());
         if (exteranalUser == null) {
-            log.debug("User entity not found for username: {}", user.getUsername());
+            log.info("User entity not found for username: {}", user.getUsername());
             return false;
         }
 
         // Получаем хэш пароля из внешней системы
-        String storedPasswordHash = exteranalUser.getPassword();
-
+        String storedPassword = exteranalUser.getPassword();
         String inputPassword = input.getChallengeResponse();
-
-        return BCrypt.checkpw(inputPassword, storedPasswordHash);
+        log.info("inputPassword: {}", inputPassword);
+        log.info("storedPasswordHash: {}", storedPassword);
+        return inputPassword.equals(storedPassword);
     }
 
     @Override
     public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
-        log.info("searchForUserStream: {}", params);
         String search = params.get(UserModel.SEARCH);
         String lower = search != null ? search.toLowerCase() : "";
-
-        log.debug("Searching for users with search term: {}", lower);
 
         Stream<UserModel> userStream = userRepository.getAllUsers().stream()
                 .filter(userEntity -> userEntity.getUsername().toLowerCase().contains(lower) ||
                         userEntity.getEmail().toLowerCase().contains(lower))
                 .map(entity -> new ExternalUserAdapter(session, realm, model, entity));
-
         // Применяем постраничный вывод
         if (firstResult != null) {
             userStream = userStream.skip(firstResult);
@@ -149,7 +141,6 @@ public class ExternalUserStorageProvider implements
         if (maxResults != null) {
             userStream = userStream.limit(maxResults);
         }
-
         return userStream;
     }
 
@@ -161,5 +152,22 @@ public class ExternalUserStorageProvider implements
     @Override
     public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realmModel, String s, String s1) {
         return Stream.empty();
+    }
+
+    @Override
+    public UserModel addUser(RealmModel realm, String username) {
+        log.info("addUser: {}", username);
+        ExteranalUser exteranalUser = new ExteranalUser();
+        exteranalUser.setUsername(username);
+        userRepository.save(exteranalUser);
+        ExternalUserAdapter userAdapter = new ExternalUserAdapter(session, realm, model, exteranalUser);
+        return userAdapter;
+    }
+
+    @Override
+    public boolean removeUser(RealmModel realmModel, UserModel user) {
+        log.info("removeUser: {}", user.getUsername());
+        String externalId = StorageId.externalId(user.getId());
+        return userRepository.delete(externalId);
     }
 }
