@@ -47,5 +47,11 @@ public class Constants {
         String CUSTOM_DIRECT_GRANT_FLOW = "direct grant with sms";
     }
 
+    public interface UserStorage{
+        String URL = "userStorageUrl";
+        String USERNAME = "userStorageUsername";
+        String PASSWORD = "userStoragePassword";
+    }
+
 
 }
