@@ -32,8 +32,6 @@ public class ManzanaServiceFactory {
                     user.setLastName("SimulatorLN");
                     user.setBirthDate(new Date().toString());
                     user.setId(UUID.randomUUID().toString());
-                    //user.setSessionID(UUID.randomUUID().toString());
-
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
                     return user;
@@ -44,6 +42,12 @@ public class ManzanaServiceFactory {
                     log.info("***** SIMULATION MODE *****,register method was called," +
                             "register in manzana user: {}", user);
                     return user;
+                }
+
+                @Override
+                public String getSessionId(String mobilePhone) {
+                    log.info("***** SIMULATION MODE *****,getSessionId method was called,");
+                    return UUID.randomUUID().toString();
                 }
             };
         } else return new ManzanaServiceImpl(config, httpClient);

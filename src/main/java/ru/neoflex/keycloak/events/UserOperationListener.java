@@ -50,7 +50,7 @@ public class UserOperationListener implements EventListenerProvider {
     }
 
     private void createAdminUser(AdminEvent adminEvent) {
-        UserModel user = getUserFromAdminEvent(adminEvent);
+        /*UserModel user = getUserFromAdminEvent(adminEvent);
         log.info("User {} created", user.getUsername());
         RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
@@ -64,7 +64,7 @@ public class UserOperationListener implements EventListenerProvider {
             throw new RuntimeException("Not OK response from sms gateway");
         } catch (ManzanaGatewayException e) {
             throw new RuntimeException("Not OK response from manzana");
-        }
+        }*/
     }
 
     private void updateAdminUser(AdminEvent adminEvent) {

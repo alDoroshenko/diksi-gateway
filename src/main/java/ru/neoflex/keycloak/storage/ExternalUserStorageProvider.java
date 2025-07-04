@@ -40,9 +40,7 @@ public class ExternalUserStorageProvider implements
         log.info("Creating new PropertyFileUserStorageProvider instance");
         this.session = session;
         this.model = model;
-        this.userRepository = new UserRepository(model.get(Constants.UserStorage.URL),
-                model.get(Constants.UserStorage.USERNAME), model.get(Constants.UserStorage.PASSWORD));
-
+        this.userRepository = new UserRepository(model);
     }
 
     @Override
@@ -167,10 +165,9 @@ public class ExternalUserStorageProvider implements
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        SmsConfiguration smsConfig = new SmsConfiguration(config);
-        ManzanaConfiguration manzanaConfiguration = new ManzanaConfiguration(config);
         try {
-            AuthProvider.execute(smsConfig, manzanaConfiguration, userAdapter, userRepository);
+            AuthProvider authProvider = new AuthProvider(config,userAdapter,userRepository);
+            authProvider.execute();
         } catch (SmsGatewayException e) {
             throw new RuntimeException("Not OK response from sms gateway");
         } catch (ManzanaGatewayException e) {

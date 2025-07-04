@@ -33,11 +33,7 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR));
             return;
         }
-        UserRepository userRepository = new UserRepository(
-                model.get(Constants.UserStorage.URL),
-                model.get(Constants.UserStorage.USERNAME),
-                model.get(Constants.UserStorage.PASSWORD)
-        );
+        UserRepository userRepository = new UserRepository(model);
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
         String enteredCode = context.getHttpRequest().getDecodedFormParameters().getFirst(
@@ -49,9 +45,8 @@ public class SmsAuthenticator implements Authenticator {
             return;
         } else if (enteredCode.isEmpty()) {
             try {
-                ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
-                SmsConfiguration smsConfig = new SmsConfiguration(config);
-                AuthProvider.execute(smsConfig, manzanaConfig, user, userRepository);
+               AuthProvider authProvider = new AuthProvider(config,user,userRepository);
+               authProvider.execute();
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                         context.form().setError("smsAuthSmsBadResponse")

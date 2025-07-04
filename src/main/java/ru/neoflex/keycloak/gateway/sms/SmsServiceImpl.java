@@ -39,7 +39,7 @@ public class SmsServiceImpl implements SmsService {
                     .build();
             HttpResponse<String> response = httpClient.send(
                     request, HttpResponse.BodyHandlers.ofString());
-            log.info("Status code: {}", response.statusCode());
+            log.info("Status code : {}", response.statusCode());
             if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                 throw new SmsGatewayException("Bad response from sms gateway");
             }

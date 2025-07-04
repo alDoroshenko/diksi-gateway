@@ -3,6 +3,7 @@ package ru.neoflex.keycloak.storage;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.component.ComponentModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.Converters;
@@ -17,17 +18,16 @@ public class UserRepository implements AutoCloseable {
     private final HikariDataSource dataSource;
     private static final String DB_DRIVER = "org.postgresql.Driver";
 
-    public UserRepository(String url, String username, String password) {
-
+    public UserRepository(ComponentModel model) {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
+        config.setJdbcUrl(model.get(Constants.UserStorage.URL));
+        config.setUsername(model.get(Constants.UserStorage.USERNAME));
+        config.setPassword(model.get(Constants.UserStorage.PASSWORD));
         config.setDriverClassName(DB_DRIVER);
 
         //TODO:
         // вынести в конфиг
-        config.setMaximumPoolSize(5);
+        config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
         config.setConnectionTimeout(30000);
         config.setIdleTimeout(600000);
@@ -101,7 +101,7 @@ public class UserRepository implements AutoCloseable {
         }
     }
 
-   public boolean updateAll(UserModel userModel) {
+   public boolean updateEntity(UserModel userModel) {
         ExteranalUser user = Converters.mapToExternalUser(userModel);
         String sql = "UPDATE users SET " +
                 Constants.dbColumn.EMAIL +

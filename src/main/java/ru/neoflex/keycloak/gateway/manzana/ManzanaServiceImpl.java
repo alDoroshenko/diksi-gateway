@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.dto.manzana.GetContactRequestDTO;
+
 import ru.neoflex.keycloak.dto.manzana.GetContactResponseDTO;
+import ru.neoflex.keycloak.dto.manzana.GetSessionIDRequestDTO;
+import ru.neoflex.keycloak.dto.manzana.GetSessionIDResponseDTO;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Converters;
 
@@ -29,12 +32,12 @@ public class ManzanaServiceImpl implements ManzanaService {
     private final HttpClient httpClient;
 
     private static final String GET_USER_ENDPOINT = "/Contact/FilterByPhoneAndEmail";
+    private static final String GET_SESSION_ID_ENDPOINT = "/Identity/AdvancedPhoneEmailLogin";
 
 
     @Override
     public ManzanaUser getUser(String mobilePhone) throws ManzanaGatewayException {
         ObjectMapper objectMapper = new ObjectMapper();
-
         try {
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -44,24 +47,20 @@ public class ManzanaServiceImpl implements ManzanaService {
                     .build();
             HttpResponse<String> response = httpClient.send(
                     request, HttpResponse.BodyHandlers.ofString());
-            log.info("Status code: {}", response.statusCode());
+            log.info("Status code for getUser: {}", response.statusCode());
             if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                 throw new ManzanaGatewayException("Bad response from manzana gateway");
             }
             log.info("Response body: {}", response.body());
             GetContactResponseDTO contactResponseDTO = Converters.getDTOFromResponse(response.body(), objectMapper, GetContactResponseDTO.class);
-            ManzanaUser manzanaUser = new ManzanaUser(contactResponseDTO.getMobilePhone()
-                    , contactResponseDTO.getEmailAddress()
-                    , contactResponseDTO.getFirstName()
-                    , contactResponseDTO.getLastName()
-                    , contactResponseDTO.getMiddleName()
-                    , contactResponseDTO.getBirthDate()
-                    //  ,null
-                    , contactResponseDTO.getGenderCode()
-                    , contactResponseDTO.isAllowSms()
-                    , contactResponseDTO.getId().toString()
-            );
-            return manzanaUser;
+            return ManzanaUser.builder()
+                    .email(contactResponseDTO.getEmailAddress())
+                    .firstName(contactResponseDTO.getFirstName())
+                    .lastName(contactResponseDTO.getLastName())
+                    .middleName(contactResponseDTO.getMiddleName())
+                    .birthDate(contactResponseDTO.getBirthDate())
+                    .id(contactResponseDTO.getId().toString())
+                    .build();
         } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new ManzanaGatewayException("Failed to get user from manzana");
         }
@@ -70,6 +69,30 @@ public class ManzanaServiceImpl implements ManzanaService {
     @Override
     public ManzanaUser register(ManzanaUser user) {
         return null;
+    }
+
+    @Override
+    public String getSessionId(String mobilePhone) throws ManzanaGatewayException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String getSessionIdJson = prepareGetSessionIdJson(mobilePhone, objectMapper);
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(uri+GET_SESSION_ID_ENDPOINT))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(getSessionIdJson))
+                    .build();
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString());
+            log.info("Status code for getSessionId: {}", response.statusCode());
+            if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new ManzanaGatewayException("Bad response from manzana gateway");
+            }
+            log.info("Response body: {}", response.body());
+            GetSessionIDResponseDTO sessionIDResponseDTO = Converters.getDTOFromResponse(response.body(),objectMapper, GetSessionIDResponseDTO.class);
+            return sessionIDResponseDTO.getSessionId().toString();
+        } catch (IOException | InterruptedException e) {
+            throw new ManzanaGatewayException("Failed to get session id from manzana");
+        }
     }
 
     public ManzanaServiceImpl(ManzanaConfiguration config, HttpClient httpClient) {
@@ -81,14 +104,6 @@ public class ManzanaServiceImpl implements ManzanaService {
     }
 
     private URI getURIForGetUser(String mobilePhone) throws URISyntaxException {
-        /*String fullUrl = String.format(
-                "%s?sessionId=%s&mobilePhone=%s&emailAddress=%s",
-                uri+GET_USER_ENDPOINT,
-                URLEncoder.encode(sessionId.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(user.getMobilePhone(), StandardCharsets.UTF_8),
-                URLEncoder.encode("", StandardCharsets.UTF_8)
-        );
-        return fullUrl;*/
         return new URIBuilder(uri + GET_USER_ENDPOINT)
                 .addParameter("sessionid", sessionId.toString())
                 .addParameter("mobilePhone", mobilePhone)
@@ -97,18 +112,20 @@ public class ManzanaServiceImpl implements ManzanaService {
     }
 
 
-    private String prepareGetManzanaUserJson(ManzanaUser user, ObjectMapper objectMapper) throws ManzanaGatewayException {
-        GetContactRequestDTO getContactRequestDTO = new GetContactRequestDTO(sessionId,
-                user.getMobilePhone(),
-                user.getEmail());
-        String manzanaUserJson;
+    private String prepareGetSessionIdJson(String pnoneNumber,ObjectMapper objectMapper ) throws ManzanaGatewayException {
+        GetSessionIDRequestDTO sessionIDRequestDTO = GetSessionIDRequestDTO.builder()
+                .phoneOrEmail(pnoneNumber)
+                .password("")
+                .partnerId(partnerId)
+                .build();
+        String sessionIdJson;
         try {
-            manzanaUserJson = objectMapper.writeValueAsString(getContactRequestDTO);
+            sessionIdJson = objectMapper.writeValueAsString(sessionIDRequestDTO);
         } catch (JsonProcessingException e) {
             throw new ManzanaGatewayException("Can't parse DTO to JSON");
         }
-        log.info("ManzanaUserJson: {}", manzanaUserJson);
-        return manzanaUserJson;
+        log.info("sessionIdJson: {}", sessionIdJson);
+        return sessionIdJson;
     }
 
 }
