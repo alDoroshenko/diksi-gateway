@@ -6,14 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.component.ComponentModel;
+import org.keycloak.models.*;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.storage.UserRepository;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 
@@ -26,6 +25,19 @@ public class SmsAuthenticator implements Authenticator {
     public void authenticate(AuthenticationFlowContext context) {
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         UserModel user = context.getUser();
+        ComponentModel model = getComponentModel(context, user);
+        if (model == null) {
+            log.error("Can't get ComponentModel");
+            context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR,
+                    context.form().setError("internalErrorDB")
+                            .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR));
+            return;
+        }
+        UserRepository userRepository = new UserRepository(
+                model.get(Constants.UserStorage.URL),
+                model.get(Constants.UserStorage.USERNAME),
+                model.get(Constants.UserStorage.PASSWORD)
+        );
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
         String enteredCode = context.getHttpRequest().getDecodedFormParameters().getFirst(
@@ -39,7 +51,7 @@ public class SmsAuthenticator implements Authenticator {
             try {
                 ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
                 SmsConfiguration smsConfig = new SmsConfiguration(config);
-                AuthProvider.execute(smsConfig, manzanaConfig, user);
+                AuthProvider.execute(smsConfig, manzanaConfig, user, userRepository);
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                         context.form().setError("smsAuthSmsBadResponse")
@@ -118,5 +130,14 @@ public class SmsAuthenticator implements Authenticator {
 
     @Override
     public void close() {
+    }
+
+    private ComponentModel getComponentModel(AuthenticationFlowContext context, UserModel user) {
+        String federationLink = user.getFederationLink();
+        if (federationLink != null) {
+            RealmModel realm = context.getRealm();
+            return realm.getComponent(federationLink);
+        }
+        return null;
     }
 }

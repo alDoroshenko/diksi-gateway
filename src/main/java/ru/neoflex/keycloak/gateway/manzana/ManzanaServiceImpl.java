@@ -32,16 +32,13 @@ public class ManzanaServiceImpl implements ManzanaService {
 
 
     @Override
-    public ManzanaUser getUser(ManzanaUser user) throws ManzanaGatewayException {
+    public ManzanaUser getUser(String mobilePhone) throws ManzanaGatewayException {
         ObjectMapper objectMapper = new ObjectMapper();
-        // String getManzanaUserJson = prepareGetManzanaUserJson(user, objectMapper);
-        // String fullURI = getFullURIforGetUser (user);
 
         try {
-            URI fullUri = getURIForGetUser(user);
-            log.info(fullUri.toString());
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(getURIForGetUser(user))
+                    .uri(getURIForGetUser(mobilePhone))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
@@ -83,7 +80,7 @@ public class ManzanaServiceImpl implements ManzanaService {
         this.httpClient = httpClient;
     }
 
-    private URI getURIForGetUser(ManzanaUser user) throws URISyntaxException {
+    private URI getURIForGetUser(String mobilePhone) throws URISyntaxException {
         /*String fullUrl = String.format(
                 "%s?sessionId=%s&mobilePhone=%s&emailAddress=%s",
                 uri+GET_USER_ENDPOINT,
@@ -94,7 +91,7 @@ public class ManzanaServiceImpl implements ManzanaService {
         return fullUrl;*/
         return new URIBuilder(uri + GET_USER_ENDPOINT)
                 .addParameter("sessionid", sessionId.toString())
-                .addParameter("mobilePhone", user.getMobilePhone())
+                .addParameter("mobilePhone", mobilePhone)
                 .addParameter("emailAddress", "")
                 .build();
     }
@@ -107,7 +104,6 @@ public class ManzanaServiceImpl implements ManzanaService {
         String manzanaUserJson;
         try {
             manzanaUserJson = objectMapper.writeValueAsString(getContactRequestDTO);
-
         } catch (JsonProcessingException e) {
             throw new ManzanaGatewayException("Can't parse DTO to JSON");
         }

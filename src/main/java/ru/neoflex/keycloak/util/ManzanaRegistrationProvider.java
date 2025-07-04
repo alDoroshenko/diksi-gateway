@@ -13,7 +13,7 @@ import ru.neoflex.keycloak.model.ManzanaUser;
 @Slf4j
 public class ManzanaRegistrationProvider {
     public static void execute(ManzanaConfiguration config, UserModel user) {
-        ManzanaUser manzanaUser = new ManzanaUser(user);
+        ManzanaUser manzanaUser = new ManzanaUser();
         registerManzanaUser(config, manzanaUser);
     }
 

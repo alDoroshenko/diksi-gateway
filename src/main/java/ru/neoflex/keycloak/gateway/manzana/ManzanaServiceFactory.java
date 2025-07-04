@@ -24,13 +24,16 @@ public class ManzanaServiceFactory {
             return new ManzanaService() {
 
                 @Override
-                public ManzanaUser getUser(ManzanaUser user) {
+                public ManzanaUser getUser(String phone) {
+                    ManzanaUser user = new ManzanaUser();
+                    user.setMobilePhone(phone);
                     user.setEmail(UUID.randomUUID().toString().substring(0, 7) + "TestMail@com");
                     user.setFirstName("Simulator");
                     user.setLastName("SimulatorLN");
                     user.setBirthDate(new Date().toString());
-                 //   user.setRegion(UUID.randomUUID().toString());
                     user.setId(UUID.randomUUID().toString());
+                    //user.setSessionID(UUID.randomUUID().toString());
+
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
                     return user;

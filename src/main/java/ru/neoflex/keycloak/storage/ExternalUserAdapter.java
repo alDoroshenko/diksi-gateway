@@ -88,7 +88,6 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public void setSingleAttribute(String name, String value) {
-        log.info("setSingleAttribute");
         switch (name) {
             case Constants.UserAttributes.LAST_NAME -> setLastName(value);
             case Constants.UserAttributes.FIRST_NAME -> setFirstName(value);
@@ -104,7 +103,6 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public void removeAttribute(String name) {
-        log.info("removeAttribute");
         switch (name) {
             case Constants.UserAttributes.LAST_NAME -> setLastName(null);
             case Constants.UserAttributes.FIRST_NAME -> setFirstName(null);

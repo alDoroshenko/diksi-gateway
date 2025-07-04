@@ -4,14 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.storage.ExteranalUser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
 @UtilityClass
 @Slf4j
@@ -24,7 +21,7 @@ public class Converters {
         }
     }
 
-    public static ExteranalUser mapToCustomUser (ResultSet rs) throws SQLException {
+    public static ExteranalUser mapToExternalUser(ResultSet rs) throws SQLException {
         ExteranalUser exteranalUser = new ExteranalUser();
         if ( rs==null ){
             log.info("mapToCustomUser: null result");
@@ -41,6 +38,20 @@ public class Converters {
         exteranalUser.setSessionId(rs.getString(Constants.dbColumn.SESSION_ID));
         exteranalUser.setManzanaId(rs.getString(Constants.dbColumn.MANZANA_ID));
         exteranalUser.setEnabled(rs.getBoolean(Constants.dbColumn.ENABLED));
+        return exteranalUser;
+    }
+    public static ExteranalUser mapToExternalUser(UserModel userModel)  {
+        ExteranalUser exteranalUser = new ExteranalUser();
+        exteranalUser.setUsername(userModel.getUsername());
+        exteranalUser.setEmail(userModel.getFirstAttribute(Constants.UserAttributes.EMAIL));
+        exteranalUser.setBirthDate(userModel.getFirstAttribute(Constants.UserAttributes.BIRTHDAY));
+        exteranalUser.setFirstName(userModel.getFirstAttribute(Constants.UserAttributes.FIRST_NAME));
+        exteranalUser.setLastName(userModel.getFirstAttribute(Constants.UserAttributes.LAST_NAME));
+        exteranalUser.setSmsCode(userModel.getFirstAttribute(Constants.UserAttributes.SMS_CODE));
+        exteranalUser.setExpiryDate(userModel.getFirstAttribute(Constants.UserAttributes.EXPIRY_DATE));
+        exteranalUser.setSessionId(userModel.getFirstAttribute(Constants.UserAttributes.SESSION_ID));
+        exteranalUser.setManzanaId(userModel.getFirstAttribute(Constants.UserAttributes.MANZANA_ID));
+        exteranalUser.setEnabled(userModel.isEnabled());
         return exteranalUser;
     }
 

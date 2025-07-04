@@ -3,6 +3,7 @@ package ru.neoflex.keycloak.storage;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.Converters;
 
@@ -47,7 +48,7 @@ public class UserRepository implements AutoCloseable {
             st.execute();
             ResultSet rs = st.getResultSet();
             if (rs.next()) {
-                return Converters.mapToCustomUser(rs);
+                return Converters.mapToExternalUser(rs);
             } else {
                 return null;
             }
@@ -63,7 +64,7 @@ public class UserRepository implements AutoCloseable {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return Converters.mapToCustomUser(rs);
+                return Converters.mapToExternalUser(rs);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database error:" + e.getMessage(), e);
@@ -78,7 +79,7 @@ public class UserRepository implements AutoCloseable {
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                users.add(Converters.mapToCustomUser(rs));
+                users.add(Converters.mapToExternalUser(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database error:" + e.getMessage(), e);
@@ -100,22 +101,61 @@ public class UserRepository implements AutoCloseable {
         }
     }
 
-    /*public void update(ExteranalUser user) {
-        String sql = "UPDATE users SET username = ?, email = ?, firstname = ?, lastname = ?, " +
-                "birthdate = ? WHERE id = ?";
+   public boolean updateAll(UserModel userModel) {
+        ExteranalUser user = Converters.mapToExternalUser(userModel);
+        String sql = "UPDATE users SET " +
+                Constants.dbColumn.EMAIL +
+                "= ?, " +
+                Constants.dbColumn.FIRST_NAME +
+                " = ?, " +
+                Constants.dbColumn.LAST_NAME +
+                " = ?, " +
+                Constants.dbColumn.BIRTHDAY +
+                " = ?, " +
+                Constants.dbColumn.SESSION_ID +
+                " = ?, " +
+                Constants.dbColumn.MANZANA_ID +
+                " = ? " +
+                "WHERE " +
+                Constants.dbColumn.USERMAME +
+                " = ?";
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getFirstName());
-            stmt.setString(4, user.getLastName());
-            stmt.setDate(5, Date.valueOf(user.getBirthDate()));
-          //  stmt.setString(6, user.getId());
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getFirstName());
+            stmt.setString(3, user.getLastName());
+            stmt.setString(4, user.getBirthDate());
+            stmt.setString(5, user.getSessionId());
+            stmt.setString(6, user.getManzanaId());
+            stmt.setString(7, user.getUsername());
             stmt.executeUpdate();
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException("Database error:" + e.getMessage(), e);
         }
-    }*/
+    }
+
+    public boolean updateOTP(UserModel userModel) {
+        ExteranalUser user = Converters.mapToExternalUser(userModel);
+        String sql = "UPDATE users SET " +
+                Constants.dbColumn.SMS_CODE +
+                "= ?, " +
+                Constants.dbColumn.EXPIRY_DATE +
+                " = ? " +
+                "WHERE " +
+                Constants.dbColumn.USERMAME +
+                " = ?";
+        try (Connection connection = getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, user.getSmsCode());
+            stmt.setString(2, user.getExpiryDate());
+            stmt.setString(3, user.getUsername());
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error:" + e.getMessage(), e);
+        }
+    }
 
     public boolean delete(String id) {
         String sql = "DELETE FROM users WHERE username = ?";

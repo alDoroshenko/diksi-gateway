@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -15,7 +12,13 @@ import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
 import org.mindrot.jbcrypt.BCrypt;
+import ru.neoflex.keycloak.ManzanaConfiguration;
+import ru.neoflex.keycloak.SmsConfiguration;
+import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.SessionUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +42,7 @@ public class ExternalUserStorageProvider implements
         this.model = model;
         this.userRepository = new UserRepository(model.get(Constants.UserStorage.URL),
                 model.get(Constants.UserStorage.USERNAME), model.get(Constants.UserStorage.PASSWORD));
-        //this.userRepository = userRepository;
+
     }
 
     @Override
@@ -161,6 +164,19 @@ public class ExternalUserStorageProvider implements
         exteranalUser.setUsername(username);
         userRepository.save(exteranalUser);
         ExternalUserAdapter userAdapter = new ExternalUserAdapter(session, realm, model, exteranalUser);
+        AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
+                Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
+                Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
+        SmsConfiguration smsConfig = new SmsConfiguration(config);
+        ManzanaConfiguration manzanaConfiguration = new ManzanaConfiguration(config);
+        try {
+            AuthProvider.execute(smsConfig, manzanaConfiguration, userAdapter, userRepository);
+        } catch (SmsGatewayException e) {
+            throw new RuntimeException("Not OK response from sms gateway");
+        } catch (ManzanaGatewayException e) {
+            throw new RuntimeException("Not OK response from manzana");
+        }
+
         return userAdapter;
     }
 
@@ -170,4 +186,10 @@ public class ExternalUserStorageProvider implements
         String externalId = StorageId.externalId(user.getId());
         return userRepository.delete(externalId);
     }
+
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
+
+
 }

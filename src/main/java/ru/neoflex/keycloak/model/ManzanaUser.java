@@ -1,10 +1,7 @@
 package ru.neoflex.keycloak.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.util.Constants;
 
@@ -12,6 +9,7 @@ import ru.neoflex.keycloak.util.Constants;
 @Setter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class ManzanaUser {
     String mobilePhone;
     String email;
@@ -23,15 +21,16 @@ public class ManzanaUser {
     int genderCode; //0-пустое, 1-М, 2-Ж
     boolean allowSms;
     String id;
+   // String sessionID;
 
-    public ManzanaUser(UserModel userModel) {
-        this.mobilePhone = userModel.getUsername();
+  /*  public ManzanaUser(UserModel userModel) {
+       *//* this.mobilePhone = userModel.getUsername();
         this.email = userModel.getEmail();
         this.firstName = userModel.getFirstName();
         this.lastName = userModel.getLastName();
-        this.birthDate = userModel.getFirstAttribute(Constants.UserAttributes.BIRTHDAY);
+        this.birthDate = userModel.getFirstAttribute(Constants.UserAttributes.BIRTHDAY);*//*
        // this.region = userModel.getFirstAttribute(Constants.UserAttributes.REGION);
-    }
+    }*/
 }
 
 
