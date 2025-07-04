@@ -14,6 +14,7 @@ import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
 import ru.neoflex.keycloak.gateway.sms.SmsService;
 import ru.neoflex.keycloak.gateway.sms.SmsServiceFactory;
 import ru.neoflex.keycloak.model.ManzanaUser;
+import ru.neoflex.keycloak.storage.UserRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,13 +23,19 @@ import java.util.Map;
 @Slf4j
 public class AuthProvider {
 
-    public static void execute(SmsConfiguration smsConfig, ManzanaConfiguration manzanaConfig, UserModel user) throws SmsGatewayException, ManzanaGatewayException {
+    public static void execute(SmsConfiguration smsConfig, ManzanaConfiguration manzanaConfig, UserModel user, UserRepository userRepository) throws SmsGatewayException, ManzanaGatewayException {
         String code = prepareOneTimePassword(smsConfig, user);
+        userRepository.updateOTP(user);
         sendSms(smsConfig, user.getUsername(), code);
-        ManzanaUser manzanaUser = new ManzanaUser(user);
-        manzanaUser = searchManzanaUser(manzanaConfig, manzanaUser);
-        if (manzanaUser != null) {
-            saveAttributes(getAttributesFromManzana(manzanaUser), user);
+        String manzanaId = user.getFirstAttribute(Constants.UserAttributes.MANZANA_ID);
+        if (manzanaId == null) {
+            ManzanaUser manzanaUser = searchManzanaUser(manzanaConfig, user.getUsername());
+            if (manzanaUser != null) {
+                saveAttributes(getAttributesFromManzana(manzanaUser), user);
+            }
+            userRepository.updateAll(user);
+        } else {
+            log.info("User with Manzana ID: {} exist id DB", manzanaId);
         }
     }
 
@@ -62,10 +69,9 @@ public class AuthProvider {
     }
 
 
-    private ManzanaUser searchManzanaUser(ManzanaConfiguration config, ManzanaUser manzanaUser) throws ManzanaGatewayException {
+    private ManzanaUser searchManzanaUser(ManzanaConfiguration config, String mobilePnone) throws ManzanaGatewayException {
         ManzanaService manzanaService = ManzanaServiceFactory.get(config);
-        // UUID sessionId = manzanaService.identify();
-        return manzanaService.getUser(manzanaUser);
+        return manzanaService.getUser(mobilePnone);
     }
 
     private Map<String, String> getAttributesFromManzana(ManzanaUser manzanaUser) {
@@ -74,7 +80,7 @@ public class AuthProvider {
         attributes.put(Constants.UserAttributes.LAST_NAME, manzanaUser.getLastName());
         attributes.put(Constants.UserAttributes.EMAIL, manzanaUser.getEmail());
         attributes.put(Constants.UserAttributes.BIRTHDAY, manzanaUser.getBirthDate());
-        //attributes.put(Constants.UserAttributes.REGION, manzanaUser.getRegion().toString());
+        attributes.put(Constants.UserAttributes.MANZANA_ID, manzanaUser.getId());
         return attributes;
 
     }

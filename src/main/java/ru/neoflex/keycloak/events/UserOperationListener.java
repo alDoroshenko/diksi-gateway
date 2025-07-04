@@ -34,8 +34,10 @@ public class UserOperationListener implements EventListenerProvider {
     public void onEvent(AdminEvent adminEvent, boolean b) {
         if (ResourceType.USER.equals(adminEvent.getResourceType())) {
             if (OperationType.CREATE.equals(adminEvent.getOperationType())) {
-                createAdminUser(adminEvent);
+                log.info("user creation event");
+             //   createAdminUser(adminEvent);
             } else if (OperationType.UPDATE.equals(adminEvent.getOperationType())) {
+                log.info("user update event");
                 updateAdminUser(adminEvent);
             }
         }
@@ -57,7 +59,7 @@ public class UserOperationListener implements EventListenerProvider {
         ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
         SmsConfiguration smsConfig = new SmsConfiguration(config);
         try {
-            AuthProvider.execute(smsConfig, manzanaConfig, user);
+            AuthProvider.execute(smsConfig, manzanaConfig, user,null);
         } catch (SmsGatewayException e) {
             throw new RuntimeException("Not OK response from sms gateway");
         } catch (ManzanaGatewayException e) {
@@ -78,7 +80,9 @@ public class UserOperationListener implements EventListenerProvider {
 
     private UserModel getUserFromAdminEvent(AdminEvent adminEvent) {
         String resourcePath = adminEvent.getResourcePath();
+        log.info("resourcePath {}", resourcePath);
         String userId = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+        log.info("userId {}", userId);
         return session.users().getUserById(session.getContext().getRealm(), userId);
     }
 }
