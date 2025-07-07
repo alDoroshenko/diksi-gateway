@@ -8,7 +8,7 @@ import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.dto.sms.Data;
 import ru.neoflex.keycloak.dto.sms.Message;
 import ru.neoflex.keycloak.dto.sms.SMSGatewayDTO;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.exception.SmsGatewayException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

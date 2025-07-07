@@ -7,7 +7,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.dto.manzana.*;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.Converters;

@@ -3,7 +3,7 @@ package ru.neoflex.keycloak;
 
 import lombok.Getter;
 import org.keycloak.models.AuthenticatorConfigModel;
-import ru.neoflex.keycloak.exceptions.ConfigurationException;
+import ru.neoflex.keycloak.exception.ConfigurationException;
 import ru.neoflex.keycloak.util.Constants;
 
 import java.util.Map;
@@ -11,10 +11,10 @@ import java.util.UUID;
 
 @Getter
 public class ManzanaConfiguration extends Configuration {
-    private String uri;
-    private UUID sessionId;
-    private UUID partnerId;
-    private UUID virtualCardTypeId;
+    private final String uri;
+    private final UUID sessionId;
+    private final UUID partnerId;
+    private final UUID virtualCardTypeId;
 
     public ManzanaConfiguration(AuthenticatorConfigModel configModel) {
         Map<String, String> config = configModel.getConfig();

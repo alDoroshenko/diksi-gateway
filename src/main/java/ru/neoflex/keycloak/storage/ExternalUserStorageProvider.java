@@ -11,12 +11,13 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.SmsGatewayException;
 import ru.neoflex.keycloak.model.ExteranalUser;
-import ru.neoflex.keycloak.util.AuthProvider;
+import ru.neoflex.keycloak.provider.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.SessionUtil;
+import ru.neoflex.keycloak.util.UserUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class ExternalUserStorageProvider implements
                 loadedUsers.put(username, user);
                 return user;
             }
-            log.info("could not find getUserByUsername: {}", username);
+            log.info("could not find getUserByUsername: {}", UserUtil.maskString(username));
         }
         return user;
     }
@@ -93,18 +94,18 @@ public class ExternalUserStorageProvider implements
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        log.info("Checking if credential type {} is configured for user: {}", credentialType, user.getUsername());
-
+        log.info("Checking if credential type {} is configured for user: {}",
+                credentialType, UserUtil.maskString(user.getUsername()));
         boolean configured = supportsCredentialType(credentialType) &&
                 userRepository.getUserByUsername(user.getUsername()) != null;
-        log.info("Credential type {} configured for user {}: {}", credentialType, user.getUsername(), configured);
+        log.info("Credential type {} configured for user {}: {}",
+                credentialType, UserUtil.maskString(user.getUsername()), configured);
         return configured;
-
     }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
-        log.info("Validating credential for user: {}", user.getUsername());
+        log.info("Validating credential for user: {}", UserUtil.maskString(user.getUsername()));
 
         if (!supportsCredentialType(input.getType())) {
             log.info("Credential type not supported: {}", input.getType());
@@ -112,15 +113,11 @@ public class ExternalUserStorageProvider implements
         }
         ExteranalUser exteranalUser = userRepository.getUserByUsername(user.getUsername());
         if (exteranalUser == null) {
-            log.info("User entity not found for username: {}", user.getUsername());
+            log.info("User entity not found for username: {}", UserUtil.maskString(user.getUsername()));
             return false;
         }
-
-        // Получаем хэш пароля из внешней системы
         String storedPassword = exteranalUser.getPassword();
         String inputPassword = input.getChallengeResponse();
-        log.info("inputPassword: {}", inputPassword);
-        log.info("storedPasswordHash: {}", storedPassword);
         return inputPassword.equals(storedPassword);
     }
 
@@ -155,7 +152,7 @@ public class ExternalUserStorageProvider implements
 
     @Override
     public UserModel addUser(RealmModel realm, String username) {
-        log.info("addUser: {}", username);
+        log.info("addUser: {}", UserUtil.maskString(username));
         ExteranalUser exteranalUser = new ExteranalUser();
         exteranalUser.setUsername(username);
         userRepository.save(exteranalUser);
@@ -164,11 +161,9 @@ public class ExternalUserStorageProvider implements
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
         try {
-            AuthProvider authProvider = new AuthProvider(config,userAdapter,userRepository);
+            AuthProvider authProvider = new AuthProvider(config, userAdapter, userRepository);
             authProvider.execute();
-        } catch (SmsGatewayException e) {
-            throw new RuntimeException(e.getMessage());
-        } catch (ManzanaGatewayException e) {
+        } catch (SmsGatewayException | ManzanaGatewayException e) {
             throw new RuntimeException(e.getMessage());
         }
 
@@ -177,14 +172,8 @@ public class ExternalUserStorageProvider implements
 
     @Override
     public boolean removeUser(RealmModel realmModel, UserModel user) {
-        log.info("removeUser: {}", user.getUsername());
+        log.info("removeUser: {}", UserUtil.maskString(user.getUsername()));
         String externalId = StorageId.externalId(user.getId());
         return userRepository.delete(externalId);
     }
-
-    public UserRepository getUserRepository() {
-        return userRepository;
-    }
-
-
 }

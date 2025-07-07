@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.util;
+package ru.neoflex.keycloak.provider;
 
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.common.util.SecretGenerator;
@@ -6,14 +6,16 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.SmsConfiguration;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.SmsGatewayException;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
 import ru.neoflex.keycloak.gateway.sms.SmsService;
 import ru.neoflex.keycloak.gateway.sms.SmsServiceFactory;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.storage.UserRepository;
+import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.UserUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,6 @@ public class AuthProvider {
     private final ManzanaService manzanaService;
 
     public void execute() throws SmsGatewayException, ManzanaGatewayException {
-        log.info("Executing auth provider");
         String manzanaId = user.getFirstAttribute(Constants.UserAttributes.MANZANA_ID);
         if (manzanaId == null) {
             ManzanaUser manzanaUser = searchManzanaUser(user.getUsername());
@@ -35,12 +36,10 @@ public class AuthProvider {
                 String sessionId = getSessionId(user.getUsername());
                 manzanaUser.setSessionId(sessionId);
                 UserUtil.saveAttributes(getAttrsFromManzanaUser(manzanaUser), user);
-                // saveAttributes(getAttrsFromManzanaUser(manzanaUser));
                  userRepository.updateEntity(user);
             } else {
-                log.info("User {} not found in Manzana: ", user.getUsername());
+                log.info("User {} not found in Manzana: ", UserUtil.maskString(user.getUsername()));
             }
-
         } else {
             log.info("User with Manzana ID: {} exist id DB", manzanaId);
         }
@@ -48,12 +47,6 @@ public class AuthProvider {
         userRepository.updateOTP(user);
         sendSms(user.getUsername(), code);
     }
-
-  /*  public void saveAttributes(Map<String, String> attributes) {
-        for (Map.Entry<String, String> entry : attributes.entrySet()) {
-            user.setSingleAttribute(entry.getKey(), entry.getValue());
-        }
-    }*/
 
     private String generateCode(int length) {
         return SecretGenerator.getInstance().randomString(length, SecretGenerator.DIGITS);
@@ -68,7 +61,6 @@ public class AuthProvider {
         attributes.put(Constants.UserAttributes.EXPIRY_DATE,
                 Long.toString(System.currentTimeMillis() + (ttl * 1000L)));
         UserUtil.saveAttributes(attributes, user);
-        //saveAttributes(attributes);
         return code;
     }
 
@@ -79,13 +71,13 @@ public class AuthProvider {
     }
 
     private ManzanaUser searchManzanaUser(String mobilePnone) throws ManzanaGatewayException {
-        log.info("Searching manzana user with mobilePnone: {}", mobilePnone);
+        log.info("Searching manzana user with mobilePnone: {}", UserUtil.maskString(mobilePnone));
         return manzanaService.getUser(mobilePnone);
     }
 
     private String getSessionId(String mobilePnone) throws ManzanaGatewayException {
         String sessionId = manzanaService.getSessionId(mobilePnone);
-        log.info("SessionId {} was got for user: {}", sessionId, mobilePnone);
+        log.info("SessionId {} was got for user: {}", sessionId, UserUtil.maskString(mobilePnone));
         return sessionId;
     }
 

@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.exceptions;
+package ru.neoflex.keycloak.exception;
 
 public class ManzanaGatewayException extends Exception{
     public ManzanaGatewayException(String message) {
