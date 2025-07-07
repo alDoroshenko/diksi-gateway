@@ -1,10 +1,7 @@
-package ru.neoflex.keycloak.events;
+package ru.neoflex.keycloak.event;
 
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
@@ -15,13 +12,10 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
+import ru.neoflex.keycloak.provider.ManzanaRegistrationProvider;
 import ru.neoflex.keycloak.storage.UserRepository;
-import ru.neoflex.keycloak.util.AuthProvider;
-import ru.neoflex.keycloak.util.Constants;
-import ru.neoflex.keycloak.util.ManzanaRegistrationProvider;
-import ru.neoflex.keycloak.util.SessionUtil;
+import ru.neoflex.keycloak.util.*;
 
 
 @Slf4j
@@ -35,26 +29,20 @@ public class UserOperationListener implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
-        if (ResourceType.USER.equals(adminEvent.getResourceType())) {
-            if (OperationType.CREATE.equals(adminEvent.getOperationType())) {
-                log.info("user creation event");
-                //   createAdminUser(adminEvent);
-            } else if (OperationType.UPDATE.equals(adminEvent.getOperationType())) {
-                log.info("user update event");
-                updateAdminUser(adminEvent);
-            }
+        if (ResourceType.USER.equals(adminEvent.getResourceType())
+                && OperationType.UPDATE.equals(adminEvent.getOperationType())) {
+            log.info("user update event");
+            updateAdminUser(adminEvent);
         }
-
     }
 
     @Override
     public void close() {
-
     }
 
     private void updateAdminUser(AdminEvent adminEvent) {
         UserModel user = getUserFromAdminEvent(adminEvent);
-        log.info("User {} updated", user.getUsername());
+        log.info("User {} updated", UserUtil.maskString(user.getUsername()));
         RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,

@@ -11,11 +11,12 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.SmsGatewayException;
 import ru.neoflex.keycloak.storage.UserRepository;
-import ru.neoflex.keycloak.util.AuthProvider;
+import ru.neoflex.keycloak.provider.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.UserUtil;
 
 
 @Slf4j
@@ -64,7 +65,7 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.FOUND));
             return;
         }
-        log.info("User: {} tried to login with code: {}", username, enteredCode);
+        log.info("User: {} tried to login with code: {}", UserUtil.maskString(username), enteredCode);
 
         if (!validateCode(user, enteredCode)) {
             context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,

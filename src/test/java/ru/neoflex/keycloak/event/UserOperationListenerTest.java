@@ -9,7 +9,7 @@ import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.*;
 import org.mockito.Mockito;
 import ru.neoflex.keycloak.mock.KeycloakMockDto;
-import ru.neoflex.keycloak.util.AuthProvider;
+import ru.neoflex.keycloak.provider.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 
 

@@ -13,7 +13,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.mock.KeycloakMockDto;
-import ru.neoflex.keycloak.util.AuthProvider;
+import ru.neoflex.keycloak.provider.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 
 import static org.mockito.ArgumentMatchers.*;

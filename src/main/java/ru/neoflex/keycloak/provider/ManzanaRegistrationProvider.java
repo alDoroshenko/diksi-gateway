@@ -1,17 +1,15 @@
-package ru.neoflex.keycloak.util;
+package ru.neoflex.keycloak.provider;
 
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.SmsConfiguration;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
-import ru.neoflex.keycloak.gateway.sms.SmsServiceFactory;
-import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.storage.UserRepository;
+import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.UserUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +32,7 @@ public class ManzanaRegistrationProvider {
 
     private String registerManzanaUser() throws ManzanaGatewayException {
         String manzanaId = manzanaService.register(user);
-        log.info("ManzanaId {} was got for user: {}", manzanaId, user.getUsername());
+        log.info("ManzanaId {} was got for user: {}", manzanaId, UserUtil.maskString(user.getUsername()));
         return manzanaId;
     }
 

@@ -1,4 +1,4 @@
-package ru.neoflex.keycloak.events;
+package ru.neoflex.keycloak.event;
 
 import com.google.auto.service.AutoService;
 import org.keycloak.Config;

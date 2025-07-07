@@ -2,7 +2,7 @@ package ru.neoflex.keycloak;
 
 import lombok.Getter;
 import org.keycloak.models.AuthenticatorConfigModel;
-import ru.neoflex.keycloak.exceptions.ConfigurationException;
+import ru.neoflex.keycloak.exception.ConfigurationException;
 import ru.neoflex.keycloak.util.Constants;
 
 import java.util.Map;
@@ -10,13 +10,13 @@ import java.util.Map;
 @Getter
 public class SmsConfiguration extends Configuration {
 
-    private int codeLenght;
-    private int ttl;
-    private String senderId;
-    private String uri;
-    private String login;
-    private String password;
-    private String message;
+    private final int codeLenght;
+    private final int ttl;
+    private final String senderId;
+    private final String uri;
+    private final String login;
+    private final String password;
+    private final String message;
 
 
 
