@@ -163,9 +163,7 @@ public class ExternalUserStorageProvider implements
         try {
             AuthProvider authProvider = new AuthProvider(config, userAdapter, userRepository);
             authProvider.execute();
-        } catch (SmsGatewayException e) {
-            throw new RuntimeException(e.getMessage());
-        } catch (ManzanaGatewayException e) {
+        } catch (SmsGatewayException | ManzanaGatewayException e) {
             throw new RuntimeException(e.getMessage());
         }
 

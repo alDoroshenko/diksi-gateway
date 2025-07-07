@@ -32,7 +32,7 @@ public class UserOperationListener implements EventListenerProvider {
         if (ResourceType.USER.equals(adminEvent.getResourceType())
                 && OperationType.UPDATE.equals(adminEvent.getOperationType())) {
             log.info("user update event");
-            updateAdminUser(adminEvent);
+            updateUser(adminEvent);
         }
     }
 
@@ -40,7 +40,7 @@ public class UserOperationListener implements EventListenerProvider {
     public void close() {
     }
 
-    private void updateAdminUser(AdminEvent adminEvent) {
+    private void updateUser(AdminEvent adminEvent) {
         UserModel user = getUserFromAdminEvent(adminEvent);
         log.info("User {} updated", UserUtil.maskString(user.getUsername()));
         RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
@@ -57,7 +57,7 @@ public class UserOperationListener implements EventListenerProvider {
         try {
             manzanaRegistrationProvider.execute();
         } catch (ManzanaGatewayException e) {
-            throw new RuntimeException("Not OK response from manzana");
+            throw new RuntimeException(e.getMessage());
         }
     }
 

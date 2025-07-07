@@ -73,7 +73,7 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.BAD_REQUEST));
             return;
         }
-        log.info("User: {} succsesfuly login", username);
+        log.info("User: {} succsesfuly login", UserUtil.maskString(username));
         context.success();
     }
 
