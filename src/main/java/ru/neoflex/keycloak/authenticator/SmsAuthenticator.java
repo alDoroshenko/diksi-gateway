@@ -7,9 +7,10 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.*;
-import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.SmsConfiguration;
+import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.storage.UserRepository;
@@ -33,11 +34,7 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR));
             return;
         }
-        UserRepository userRepository = new UserRepository(
-                model.get(Constants.UserStorage.URL),
-                model.get(Constants.UserStorage.USERNAME),
-                model.get(Constants.UserStorage.PASSWORD)
-        );
+        UserRepository userRepository = new UserRepository(model);
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
         String enteredCode = context.getHttpRequest().getDecodedFormParameters().getFirst(
@@ -49,9 +46,8 @@ public class SmsAuthenticator implements Authenticator {
             return;
         } else if (enteredCode.isEmpty()) {
             try {
-                ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
-                SmsConfiguration smsConfig = new SmsConfiguration(config);
-                AuthProvider.execute(smsConfig, manzanaConfig, user, userRepository);
+               AuthProvider authProvider = new AuthProvider(config,user,userRepository);
+               authProvider.execute();
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,
                         context.form().setError("smsAuthSmsBadResponse")

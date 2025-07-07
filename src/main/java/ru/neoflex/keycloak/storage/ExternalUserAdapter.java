@@ -8,10 +8,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
+import ru.neoflex.keycloak.model.ExteranalUser;
 import ru.neoflex.keycloak.util.Constants;
 
-import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -118,7 +117,6 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public void setAttribute(String name, List<String> values) {
-        log.info("setAttribute");
         String value = values != null && !values.isEmpty() ? values.get(0) : null;
         switch (name) {
             case Constants.UserAttributes.LAST_NAME -> setLastName(value);

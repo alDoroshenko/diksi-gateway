@@ -11,11 +11,9 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-import org.mindrot.jbcrypt.BCrypt;
-import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.SmsConfiguration;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.model.ExteranalUser;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.SessionUtil;
@@ -40,9 +38,7 @@ public class ExternalUserStorageProvider implements
         log.info("Creating new PropertyFileUserStorageProvider instance");
         this.session = session;
         this.model = model;
-        this.userRepository = new UserRepository(model.get(Constants.UserStorage.URL),
-                model.get(Constants.UserStorage.USERNAME), model.get(Constants.UserStorage.PASSWORD));
-
+        this.userRepository = new UserRepository(model);
     }
 
     @Override
@@ -167,14 +163,13 @@ public class ExternalUserStorageProvider implements
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        SmsConfiguration smsConfig = new SmsConfiguration(config);
-        ManzanaConfiguration manzanaConfiguration = new ManzanaConfiguration(config);
         try {
-            AuthProvider.execute(smsConfig, manzanaConfiguration, userAdapter, userRepository);
+            AuthProvider authProvider = new AuthProvider(config,userAdapter,userRepository);
+            authProvider.execute();
         } catch (SmsGatewayException e) {
-            throw new RuntimeException("Not OK response from sms gateway");
+            throw new RuntimeException(e.getMessage());
         } catch (ManzanaGatewayException e) {
-            throw new RuntimeException("Not OK response from manzana");
+            throw new RuntimeException(e.getMessage());
         }
 
         return userAdapter;

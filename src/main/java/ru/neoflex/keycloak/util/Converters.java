@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.storage.ExteranalUser;
+import ru.neoflex.keycloak.model.ExteranalUser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,6 +40,7 @@ public class Converters {
         exteranalUser.setEnabled(rs.getBoolean(Constants.dbColumn.ENABLED));
         return exteranalUser;
     }
+
     public static ExteranalUser mapToExternalUser(UserModel userModel)  {
         ExteranalUser exteranalUser = new ExteranalUser();
         exteranalUser.setUsername(userModel.getUsername());

@@ -1,6 +1,7 @@
 package ru.neoflex.keycloak.gateway.manzana;
 
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Constants;
@@ -32,18 +33,23 @@ public class ManzanaServiceFactory {
                     user.setLastName("SimulatorLN");
                     user.setBirthDate(new Date().toString());
                     user.setId(UUID.randomUUID().toString());
-                    //user.setSessionID(UUID.randomUUID().toString());
-
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
-                    return user;
+                   // return user;
+                    return null;
                 }
 
                 @Override
-                public ManzanaUser register(ManzanaUser user) {
+                public String register(UserModel user) {
                     log.info("***** SIMULATION MODE *****,register method was called," +
-                            "register in manzana user: {}", user);
-                    return user;
+                            "register in manzana user: {}", user.getUsername());
+                   return UUID.randomUUID().toString();
+                }
+
+                @Override
+                public String getSessionId(String mobilePhone) {
+                    log.info("***** SIMULATION MODE *****,getSessionId method was called,");
+                    return UUID.randomUUID().toString();
                 }
             };
         } else return new ManzanaServiceImpl(config, httpClient);
