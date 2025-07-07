@@ -2,7 +2,6 @@ package ru.neoflex.keycloak.util;
 
 import lombok.experimental.UtilityClass;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.storage.UserRepository;
 
 import java.util.Map;
 
