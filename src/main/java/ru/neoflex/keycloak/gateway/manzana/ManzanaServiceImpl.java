@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
+import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.dto.manzana.GetContactResponseDTO;
-import ru.neoflex.keycloak.dto.manzana.GetSessionIDRequestDTO;
-import ru.neoflex.keycloak.dto.manzana.GetSessionIDResponseDTO;
+import ru.neoflex.keycloak.dto.manzana.*;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.model.ManzanaUser;
 import ru.neoflex.keycloak.util.Constants;
@@ -32,13 +31,13 @@ public class ManzanaServiceImpl implements ManzanaService {
 
     private static final String GET_USER_ENDPOINT = "/Contact/FilterByPhoneAndEmail";
     private static final String GET_SESSION_ID_ENDPOINT = "/Identity/AdvancedPhoneEmailLogin";
+    private static final String REGISTER_ENDPOINT = "/Contact/RegisterWithoutConfirmation";
 
 
     @Override
     public ManzanaUser getUser(String mobilePhone) throws ManzanaGatewayException {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(getURIForGetUser(mobilePhone))
                     .header("Content-Type", "application/json")
@@ -70,8 +69,31 @@ public class ManzanaServiceImpl implements ManzanaService {
     }
 
     @Override
-    public ManzanaUser register(ManzanaUser user) {
-        return null;
+    public String register(UserModel user) throws ManzanaGatewayException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String manzanaRegisterJson = prepareRegistrationJson(user, objectMapper);
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(uri+REGISTER_ENDPOINT))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(manzanaRegisterJson))
+                    .build();
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString());
+            log.info("Status code for register: {}", response.statusCode());
+            if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new ManzanaGatewayException("Bad response from manzana gateway");
+            }
+            log.info("Response body: {}", response.body());
+
+            ManzanaRegisterResponseDTO manzanaRegisterResponseDTO = Converters.getDTOFromResponse(
+                    response.body(),
+                    objectMapper,
+                    ManzanaRegisterResponseDTO.class);
+            return manzanaRegisterResponseDTO.getId().toString();
+        } catch (IOException | InterruptedException e) {
+            throw new ManzanaGatewayException("Failed to register user in manzana");
+        }
     }
 
     @Override
@@ -112,7 +134,7 @@ public class ManzanaServiceImpl implements ManzanaService {
 
     private URI getURIForGetUser(String mobilePhone) throws URISyntaxException {
         return new URIBuilder(uri + GET_USER_ENDPOINT)
-                .addParameter(Constants.ManzanaConstants.SESSION_ID, sessionId.toString())
+                .addParameter(Constants.ManzanaConstants.SESSION_ID.toLowerCase(), sessionId.toString())
                 .addParameter(Constants.ManzanaConstants.MOBILE_PHONE_PARAM, mobilePhone)
                 .addParameter(Constants.ManzanaConstants.EMAIL_PARAM, "")
                 .build();
@@ -133,6 +155,38 @@ public class ManzanaServiceImpl implements ManzanaService {
         }
         log.info("sessionIdJson: {}", sessionIdJson);
         return sessionIdJson;
+    }
+
+    private String prepareRegistrationJson(UserModel user,ObjectMapper objectMapper ) throws ManzanaGatewayException {
+        ManzanaRegisterRequestDTO manzanaRegisterDTO = ManzanaRegisterRequestDTO.builder()
+                .sessionId(sessionId)
+                .partnerId(partnerId)
+                .virtualCardTypeId(virtualCardTypeId)
+                .mobilePhone(user.getUsername())
+                .emailAddress(user.getFirstAttribute(Constants.UserAttributes.EMAIL))
+                .firstName(user.getFirstAttribute(Constants.UserAttributes.FIRST_NAME))
+                .lastName(user.getFirstAttribute(Constants.UserAttributes.LAST_NAME))
+                .password("")
+                .birthDate(user.getFirstAttribute(Constants.UserAttributes.BIRTHDAY))
+                .genderCode(0)
+                .allowNotification(true)
+                .allowEmail(true)
+                .allowSms(true)
+                .agreeToTerms(true)
+                .communicationMethod(1)
+                .address1Region(null)
+                .referralCode(null)
+                .source(9)
+                .subjectId(1)
+                .build();
+        String manzanaRegisterJson;
+        try {
+            manzanaRegisterJson = objectMapper.writeValueAsString(manzanaRegisterDTO);
+        } catch (JsonProcessingException e) {
+            throw new ManzanaGatewayException("Can't parse DTO to JSON");
+        }
+        log.info(" manzanaRegisterJson: {}",  manzanaRegisterJson);
+        return  manzanaRegisterJson;
     }
 
 }

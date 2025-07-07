@@ -13,6 +13,7 @@ import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
 import ru.neoflex.keycloak.exceptions.SmsGatewayException;
+import ru.neoflex.keycloak.model.ExteranalUser;
 import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.SessionUtil;
@@ -166,9 +167,9 @@ public class ExternalUserStorageProvider implements
             AuthProvider authProvider = new AuthProvider(config,userAdapter,userRepository);
             authProvider.execute();
         } catch (SmsGatewayException e) {
-            throw new RuntimeException("Not OK response from sms gateway");
+            throw new RuntimeException(e.getMessage());
         } catch (ManzanaGatewayException e) {
-            throw new RuntimeException("Not OK response from manzana");
+            throw new RuntimeException(e.getMessage());
         }
 
         return userAdapter;

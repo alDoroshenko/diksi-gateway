@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.models.UserModel;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.storage.ExteranalUser;
+import ru.neoflex.keycloak.model.ExteranalUser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

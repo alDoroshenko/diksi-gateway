@@ -1,9 +1,6 @@
 package ru.neoflex.keycloak.dto.manzana;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,6 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class ManzanaRegisterResponseDTO {
     UUID id;
     String lastName;
@@ -54,7 +52,7 @@ public class ManzanaRegisterResponseDTO {
     String stateName;
     UUID cityId;
     String cityName;
-    String Street;
+    String street;
     BigDecimal building;
     String requestedForUpdateEmailAddress;
     boolean agreeToTerms;

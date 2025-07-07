@@ -1,7 +1,11 @@
 package ru.neoflex.keycloak.events;
 
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.component.ComponentModel;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -12,6 +16,9 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
+import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
+import ru.neoflex.keycloak.storage.UserRepository;
+import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.ManzanaRegistrationProvider;
 import ru.neoflex.keycloak.util.SessionUtil;
@@ -31,7 +38,7 @@ public class UserOperationListener implements EventListenerProvider {
         if (ResourceType.USER.equals(adminEvent.getResourceType())) {
             if (OperationType.CREATE.equals(adminEvent.getOperationType())) {
                 log.info("user creation event");
-             //   createAdminUser(adminEvent);
+                //   createAdminUser(adminEvent);
             } else if (OperationType.UPDATE.equals(adminEvent.getOperationType())) {
                 log.info("user update event");
                 updateAdminUser(adminEvent);
@@ -52,17 +59,34 @@ public class UserOperationListener implements EventListenerProvider {
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
-        ManzanaRegistrationProvider.execute(manzanaConfig, user);
+        ComponentModel model = getComponentModel(realm, user);
+        if (model == null) {
+            log.error("Can't get ComponentModel");
+            return;
+        }
+        UserRepository userRepository = new UserRepository(model);
+        ManzanaRegistrationProvider manzanaRegistrationProvider = new ManzanaRegistrationProvider(config, user, userRepository);
+        try {
+            manzanaRegistrationProvider.execute();
+        } catch (ManzanaGatewayException e) {
+            throw new RuntimeException("Not OK response from manzana");
+        }
     }
 
     private UserModel getUserFromAdminEvent(AdminEvent adminEvent) {
         String resourcePath = adminEvent.getResourcePath();
-        log.info("resourcePath {}", resourcePath);
         String userId = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
-        log.info("userId {}", userId);
         return session.users().getUserById(session.getContext().getRealm(), userId);
     }
+
+    private ComponentModel getComponentModel(RealmModel realm, UserModel user) {
+        String federationLink = user.getFederationLink();
+        if (federationLink != null) {
+            return realm.getComponent(federationLink);
+        }
+        return null;
+    }
+
 }
 
 

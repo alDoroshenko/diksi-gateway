@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.UserModel;
+import ru.neoflex.keycloak.model.ExteranalUser;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.Converters;
 
