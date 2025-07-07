@@ -27,6 +27,8 @@ public class SmsServiceImpl implements SmsService {
     private static final String SMS_TYPE = "SMS";
     private final HttpClient httpClient;
 
+    private final int TTL_MIN=10;
+
 
     @Override
     public void send(String phoneNumber, String message) throws SmsGatewayException {
@@ -54,7 +56,7 @@ public class SmsServiceImpl implements SmsService {
                 , password
                 , phoneNumber
                 , new Message(SMS_TYPE,
-                new Data(message, senderId, 10)));
+                new Data(message, senderId, TTL_MIN)));
         ObjectMapper objectMapper = new ObjectMapper();
 
         String smsGatewayJson;

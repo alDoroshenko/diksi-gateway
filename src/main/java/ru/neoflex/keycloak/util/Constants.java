@@ -22,6 +22,8 @@ public class Constants {
         String SESSION_ID = "sessionId";
         String PARTNER_ID = "partnerId";
         String VIRTUAL_CARD_TYPE_ID = "virtualCardTypeId";
+        String MOBILE_PHONE_PARAM = "mobilePhone";
+        String EMAIL_PARAM = "emailAddress";
     }
 
 

@@ -10,8 +10,6 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
 import ru.neoflex.keycloak.util.Constants;
 
-import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;

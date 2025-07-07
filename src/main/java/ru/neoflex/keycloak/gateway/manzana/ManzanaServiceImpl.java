@@ -5,13 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import ru.neoflex.keycloak.ManzanaConfiguration;
-
 import ru.neoflex.keycloak.dto.manzana.GetContactResponseDTO;
 import ru.neoflex.keycloak.dto.manzana.GetSessionIDRequestDTO;
 import ru.neoflex.keycloak.dto.manzana.GetSessionIDResponseDTO;
 import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
 import ru.neoflex.keycloak.model.ManzanaUser;
+import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.Converters;
 
 import java.io.IOException;
@@ -52,7 +51,11 @@ public class ManzanaServiceImpl implements ManzanaService {
                 throw new ManzanaGatewayException("Bad response from manzana gateway");
             }
             log.info("Response body: {}", response.body());
-            GetContactResponseDTO contactResponseDTO = Converters.getDTOFromResponse(response.body(), objectMapper, GetContactResponseDTO.class);
+            GetContactResponseDTO contactResponseDTO = Converters.getDTOFromResponse(
+                    response.body(),
+                    objectMapper,
+                    GetContactResponseDTO.class);
+
             return ManzanaUser.builder()
                     .email(contactResponseDTO.getEmailAddress())
                     .firstName(contactResponseDTO.getFirstName())
@@ -88,7 +91,11 @@ public class ManzanaServiceImpl implements ManzanaService {
                 throw new ManzanaGatewayException("Bad response from manzana gateway");
             }
             log.info("Response body: {}", response.body());
-            GetSessionIDResponseDTO sessionIDResponseDTO = Converters.getDTOFromResponse(response.body(),objectMapper, GetSessionIDResponseDTO.class);
+
+            GetSessionIDResponseDTO sessionIDResponseDTO = Converters.getDTOFromResponse(
+                    response.body(),
+                    objectMapper,
+                    GetSessionIDResponseDTO.class);
             return sessionIDResponseDTO.getSessionId().toString();
         } catch (IOException | InterruptedException e) {
             throw new ManzanaGatewayException("Failed to get session id from manzana");
@@ -105,9 +112,9 @@ public class ManzanaServiceImpl implements ManzanaService {
 
     private URI getURIForGetUser(String mobilePhone) throws URISyntaxException {
         return new URIBuilder(uri + GET_USER_ENDPOINT)
-                .addParameter("sessionid", sessionId.toString())
-                .addParameter("mobilePhone", mobilePhone)
-                .addParameter("emailAddress", "")
+                .addParameter(Constants.ManzanaConstants.SESSION_ID, sessionId.toString())
+                .addParameter(Constants.ManzanaConstants.MOBILE_PHONE_PARAM, mobilePhone)
+                .addParameter(Constants.ManzanaConstants.EMAIL_PARAM, "")
                 .build();
     }
 

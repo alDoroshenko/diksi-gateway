@@ -12,10 +12,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.ManzanaConfiguration;
-import ru.neoflex.keycloak.SmsConfiguration;
-import ru.neoflex.keycloak.exceptions.ManzanaGatewayException;
-import ru.neoflex.keycloak.exceptions.SmsGatewayException;
-import ru.neoflex.keycloak.util.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.ManzanaRegistrationProvider;
 import ru.neoflex.keycloak.util.SessionUtil;
@@ -47,24 +43,6 @@ public class UserOperationListener implements EventListenerProvider {
     @Override
     public void close() {
 
-    }
-
-    private void createAdminUser(AdminEvent adminEvent) {
-        /*UserModel user = getUserFromAdminEvent(adminEvent);
-        log.info("User {} created", user.getUsername());
-        RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
-        AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
-                Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
-                Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        ManzanaConfiguration manzanaConfig = new ManzanaConfiguration(config);
-        SmsConfiguration smsConfig = new SmsConfiguration(config);
-        try {
-            AuthProvider.execute(smsConfig, manzanaConfig, user,null);
-        } catch (SmsGatewayException e) {
-            throw new RuntimeException("Not OK response from sms gateway");
-        } catch (ManzanaGatewayException e) {
-            throw new RuntimeException("Not OK response from manzana");
-        }*/
     }
 
     private void updateAdminUser(AdminEvent adminEvent) {
