@@ -30,7 +30,7 @@ public class Constants {
     public interface RequestConstants {
         String SMS_CODE = "smsCode";
         String USERNAME = "username";
-        String PASSWORD = "password";
+        String MAGNIT_AUTH = "magnitAuth";
     }
 
     public interface UserAttributes {

@@ -35,11 +35,21 @@ public class SmsAuthenticator implements Authenticator {
                             .createErrorPage(Response.Status.INTERNAL_SERVER_ERROR));
             return;
         }
+
         UserRepository userRepository = new UserRepository(model);
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
         String enteredCode = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.SMS_CODE);
+        boolean magnitAuth = Boolean.parseBoolean(context.getHttpRequest().getDecodedFormParameters().getFirst(
+                Constants.RequestConstants.MAGNIT_AUTH));
+
+        if (magnitAuth){
+            log.info("User: {} succsesfuly login via magnit ID", UserUtil.maskString(username));
+            context.success();
+            return;
+        }
+
         if (enteredCode == null) {
             context.failureChallenge(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR,
                     context.form().setError("smsAuthSmsCodeAbsent")
