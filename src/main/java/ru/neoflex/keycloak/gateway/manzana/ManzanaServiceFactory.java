@@ -35,8 +35,9 @@ public class ManzanaServiceFactory {
                     user.setId(UUID.randomUUID().toString());
                     log.info("***** SIMULATION MODE *****,getUser method was called," +
                             "get user from manzana : {}", user);
-                    return user;
-                    // return null;
+                    if (Long.parseLong(phone)%2==0){
+                        return user;
+                    } else return null;
                 }
 
                 @Override

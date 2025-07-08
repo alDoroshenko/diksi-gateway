@@ -13,7 +13,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exception.ManzanaGatewayException;
-import ru.neoflex.keycloak.provider.ManzanaRegistrationProvider;
+import ru.neoflex.keycloak.provider.ManzanaProvider;
 import ru.neoflex.keycloak.storage.UserRepository;
 import ru.neoflex.keycloak.util.*;
 
@@ -53,9 +53,9 @@ public class UserOperationListener implements EventListenerProvider {
             return;
         }
         UserRepository userRepository = new UserRepository(model);
-        ManzanaRegistrationProvider manzanaRegistrationProvider = new ManzanaRegistrationProvider(config, user, userRepository);
+        ManzanaProvider manzanaProvider = new ManzanaProvider(config, user, userRepository);
         try {
-            manzanaRegistrationProvider.execute();
+            manzanaProvider.execute();
         } catch (ManzanaGatewayException e) {
             throw new RuntimeException(e.getMessage());
         }

@@ -16,16 +16,23 @@ import java.util.Map;
 
 
 @Slf4j
-public class ManzanaRegistrationProvider {
+public class ManzanaProvider {
     private final ManzanaService manzanaService;
     private final UserModel user;
     private final UserRepository userRepository;
 
     public void execute() throws ManzanaGatewayException {
-        String manzanaId = registerManzanaUser();
-        Map<String, String> attributes = new HashMap<>();
-        attributes.put(Constants.UserAttributes.MANZANA_ID, manzanaId);
-        UserUtil.saveAttributes(attributes, user);
+        if (user.getFirstAttribute(Constants.UserAttributes.MANZANA_ID) == null) {
+            String manzanaId = registerManzanaUser();
+            String sessionId = getSessionId(user.getUsername());
+            Map<String, String> attributes = new HashMap<>();
+            attributes.put(Constants.UserAttributes.MANZANA_ID, manzanaId);
+            attributes.put(Constants.UserAttributes.SESSION_ID, sessionId);
+            UserUtil.saveAttributes(attributes, user);
+        }
+        else {
+            log.info("user already exists in manzana");
+        }
         userRepository.updateEntity(user);
     }
 
@@ -36,9 +43,16 @@ public class ManzanaRegistrationProvider {
         return manzanaId;
     }
 
-    public ManzanaRegistrationProvider(AuthenticatorConfigModel config, UserModel user, UserRepository userRepository) {
+    private String getSessionId(String mobilePnone) throws ManzanaGatewayException {
+        String sessionId = manzanaService.getSessionId(mobilePnone);
+        log.info("SessionId {} was got for user: {}", sessionId, UserUtil.maskString(mobilePnone));
+        return sessionId;
+    }
+
+    public ManzanaProvider(AuthenticatorConfigModel config, UserModel user, UserRepository userRepository) {
         this.user = user;
         this.userRepository = userRepository;
         this.manzanaService = ManzanaServiceFactory.get(new ManzanaConfiguration(config));
     }
+
 }

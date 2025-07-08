@@ -116,6 +116,8 @@ public class UserRepository implements AutoCloseable {
                 Constants.dbColumn.SESSION_ID +
                 " = ?, " +
                 Constants.dbColumn.MANZANA_ID +
+                " = ?, " +
+                Constants.dbColumn.ENABLED +
                 " = ? " +
                 "WHERE " +
                 Constants.dbColumn.USERMAME +
@@ -128,7 +130,8 @@ public class UserRepository implements AutoCloseable {
             stmt.setString(4, user.getBirthDate());
             stmt.setString(5, user.getSessionId());
             stmt.setString(6, user.getManzanaId());
-            stmt.setString(7, user.getUsername());
+            stmt.setBoolean(7, user.isEnabled());
+            stmt.setString(8, user.getUsername());
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -157,6 +160,7 @@ public class UserRepository implements AutoCloseable {
             throw new RuntimeException("Database error:" + e.getMessage(), e);
         }
     }
+
 
     public boolean delete(String id) {
         String sql = "DELETE FROM users WHERE username = ?";
