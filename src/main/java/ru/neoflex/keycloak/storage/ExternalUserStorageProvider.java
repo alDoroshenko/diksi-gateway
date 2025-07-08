@@ -4,19 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.models.*;
+import org.keycloak.models.GroupModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-import ru.neoflex.keycloak.exception.ManzanaGatewayException;
-import ru.neoflex.keycloak.exception.SmsGatewayException;
 import ru.neoflex.keycloak.model.ExteranalUser;
-import ru.neoflex.keycloak.provider.AuthProvider;
-import ru.neoflex.keycloak.util.Constants;
-import ru.neoflex.keycloak.util.SessionUtil;
 import ru.neoflex.keycloak.util.UserUtil;
 
 import java.util.HashMap;
@@ -156,18 +154,7 @@ public class ExternalUserStorageProvider implements
         ExteranalUser exteranalUser = new ExteranalUser();
         exteranalUser.setUsername(username);
         userRepository.save(exteranalUser);
-        ExternalUserAdapter userAdapter = new ExternalUserAdapter(session, realm, model, exteranalUser);
-        AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
-                Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
-                Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        try {
-            AuthProvider authProvider = new AuthProvider(config, userAdapter, userRepository);
-            authProvider.execute();
-        } catch (SmsGatewayException | ManzanaGatewayException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-
-        return userAdapter;
+        return new ExternalUserAdapter(session, realm, model, exteranalUser);
     }
 
     @Override
