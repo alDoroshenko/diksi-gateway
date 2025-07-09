@@ -1,0 +1,34 @@
+version: "3.2"
+
+services:
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:26.2.5'
+    user: root
+    entrypoint: /opt/keycloak/bin/kc.sh
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB_USERNAME: sa  # Стандартный пользователь H2
+      KC_DB_PASSWORD: ""  # Пустой пароль для H2
+      KC_SPI_CONNECTIONS_JPA_OFR_URL: jdbc:postgresql://postgres:5432/postgres
+      KC_SPI_CONNECTIONS_JPA_OFR_USERNAME: postgres
+      KC_SPI_CONNECTIONS_JPA_OFR_PASSWORD: postgres
+      DB_VENDOR: h2
+    volumes:
+      - ./h2:/opt/keycloak/data/h2
+      - 'D:\projects\Diksi\diksi-gateway\plugins:/opt/keycloak/providers/'
+    ports:
+      - "8034:8080"
+    command: ["start-dev"]
+
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "user_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+

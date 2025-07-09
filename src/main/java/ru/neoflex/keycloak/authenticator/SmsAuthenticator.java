@@ -13,7 +13,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.exception.SmsGatewayException;
-import ru.neoflex.keycloak.storage.UserRepository;
 import ru.neoflex.keycloak.provider.AuthProvider;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.UserUtil;
@@ -36,7 +35,6 @@ public class SmsAuthenticator implements Authenticator {
             return;
         }
 
-        UserRepository userRepository = new UserRepository(model);
         String username = context.getHttpRequest().getDecodedFormParameters().getFirst(
                 Constants.RequestConstants.USERNAME);
         String enteredCode = context.getHttpRequest().getDecodedFormParameters().getFirst(
@@ -57,7 +55,7 @@ public class SmsAuthenticator implements Authenticator {
             return;
         } else if (enteredCode.isEmpty()) {
             try {
-               AuthProvider authProvider = new AuthProvider(config,user,userRepository);
+               AuthProvider authProvider = new AuthProvider(config,user);
                authProvider.execute();
             } catch (SmsGatewayException e) {
                 context.failureChallenge(AuthenticationFlowError.ACCESS_DENIED,

@@ -13,7 +13,7 @@ import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
 import ru.neoflex.keycloak.gateway.sms.SmsService;
 import ru.neoflex.keycloak.gateway.sms.SmsServiceFactory;
 import ru.neoflex.keycloak.model.ManzanaUser;
-import ru.neoflex.keycloak.storage.UserRepository;
+
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.UserUtil;
 
@@ -23,7 +23,6 @@ import java.util.Map;
 @Slf4j
 public class AuthProvider {
     private final UserModel user;
-    private final UserRepository userRepository;
     private final SmsConfiguration smsConfig;
     private final SmsService smsService;
     private final ManzanaService manzanaService;
@@ -36,7 +35,6 @@ public class AuthProvider {
                 String sessionId = getSessionId(user.getUsername());
                 manzanaUser.setSessionId(sessionId);
                 UserUtil.saveAttributes(getAttrsFromManzanaUser(manzanaUser), user);
-                 userRepository.updateEntity(user);
             } else {
                 log.info("User {} not found in Manzana: ", UserUtil.maskString(user.getUsername()));
             }
@@ -44,7 +42,6 @@ public class AuthProvider {
             log.info("User with Manzana ID: {} exist id DB", manzanaId);
         }
         String code = prepareOneTimePassword(user);
-        userRepository.updateOTP(user);
         sendSms(user.getUsername(), code);
     }
 
@@ -92,9 +89,8 @@ public class AuthProvider {
         return attributes;
     }
 
-    public AuthProvider(AuthenticatorConfigModel config, UserModel user, UserRepository userRepository) {
+    public AuthProvider(AuthenticatorConfigModel config, UserModel user) {
         this.user = user;
-        this.userRepository = userRepository;
         this.smsConfig = new SmsConfiguration(config);
         this.smsService = SmsServiceFactory.get(smsConfig);
         this.manzanaService = ManzanaServiceFactory.get(new ManzanaConfiguration(config));
