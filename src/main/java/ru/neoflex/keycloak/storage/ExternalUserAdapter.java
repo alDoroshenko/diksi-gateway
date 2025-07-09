@@ -135,7 +135,6 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
     }
 
     public void setPushEnable(String pushEnable) {
-        log.info("setPushEnable: " + pushEnable);
         update(it -> it.setPushEnable(Boolean.parseBoolean(pushEnable)));
     }
 
