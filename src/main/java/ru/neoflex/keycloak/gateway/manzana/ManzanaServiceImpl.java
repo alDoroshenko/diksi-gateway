@@ -74,7 +74,7 @@ public class ManzanaServiceImpl implements ManzanaService {
         String manzanaRegisterJson = prepareRegistrationJson(user, objectMapper);
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uri+REGISTER_ENDPOINT))
+                    .uri(URI.create(uri + REGISTER_ENDPOINT))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(manzanaRegisterJson))
                     .build();
@@ -102,7 +102,7 @@ public class ManzanaServiceImpl implements ManzanaService {
         String getSessionIdJson = prepareGetSessionIdJson(mobilePhone, objectMapper);
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uri+GET_SESSION_ID_ENDPOINT))
+                    .uri(URI.create(uri + GET_SESSION_ID_ENDPOINT))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(getSessionIdJson))
                     .build();
@@ -141,7 +141,7 @@ public class ManzanaServiceImpl implements ManzanaService {
     }
 
 
-    private String prepareGetSessionIdJson(String pnoneNumber,ObjectMapper objectMapper ) throws ManzanaGatewayException {
+    private String prepareGetSessionIdJson(String pnoneNumber, ObjectMapper objectMapper) throws ManzanaGatewayException {
         GetSessionIDRequestDTO sessionIDRequestDTO = GetSessionIDRequestDTO.builder()
                 .phoneOrEmail(pnoneNumber)
                 .password("")
@@ -157,7 +157,7 @@ public class ManzanaServiceImpl implements ManzanaService {
         return sessionIdJson;
     }
 
-    private String prepareRegistrationJson(UserModel user,ObjectMapper objectMapper ) throws ManzanaGatewayException {
+    private String prepareRegistrationJson(UserModel user, ObjectMapper objectMapper) throws ManzanaGatewayException {
         ManzanaRegisterRequestDTO manzanaRegisterDTO = ManzanaRegisterRequestDTO.builder()
                 .sessionId(sessionId)
                 .partnerId(partnerId)
@@ -174,7 +174,8 @@ public class ManzanaServiceImpl implements ManzanaService {
                 .allowSms(true)
                 .agreeToTerms(true)
                 .communicationMethod(1)
-                .address1Region(null)
+                .address1Region(user.getFirstAttribute(Constants.UserAttributes.REGION) != null ?
+                        (UUID.fromString(user.getFirstAttribute(Constants.UserAttributes.REGION))) : null)
                 .referralCode(null)
                 .source(9)
                 .subjectId(1)
@@ -185,8 +186,8 @@ public class ManzanaServiceImpl implements ManzanaService {
         } catch (JsonProcessingException e) {
             throw new ManzanaGatewayException("Can't parse DTO to JSON");
         }
-        log.info(" manzanaRegisterJson: {}",  manzanaRegisterJson);
-        return  manzanaRegisterJson;
+        log.info(" manzanaRegisterJson: {}", manzanaRegisterJson);
+        return manzanaRegisterJson;
     }
 
 }

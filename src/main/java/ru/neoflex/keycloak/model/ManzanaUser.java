@@ -22,6 +22,7 @@ public class ManzanaUser {
     boolean allowSms;
     String id;
     String sessionId;
+    String region;
 
 }
 

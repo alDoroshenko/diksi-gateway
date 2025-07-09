@@ -41,6 +41,8 @@ public class Constants {
         String BIRTHDAY = "birthday";
         String MANZANA_ID = "manzanaId";
         String SESSION_ID = "sessionId";
+        String REGION = "region";
+        String PUSH_ENABLE = "pushEnable";
 
     }
 

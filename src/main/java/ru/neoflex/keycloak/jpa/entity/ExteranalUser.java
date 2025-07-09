@@ -45,6 +45,12 @@ public class ExteranalUser implements JpaEntity<String>{
     @Column(name = "manzana_id")
     private String manzanaId;
 
+    @Column(name = "region")
+    private String region;
+
+    @Column(name = "push_enable")
+    private boolean pushEnable;
+
     @Column(name = "enabled")
     private boolean enabled;
 

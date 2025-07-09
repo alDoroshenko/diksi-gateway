@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -121,6 +122,22 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
         update(it -> it.setManzanaId(manzanaId));
     }
 
+    public String getRegion() {
+        return entity.getRegion();
+    }
+
+    public void setRegion(String region) {
+        update(it -> it.setRegion(region));
+    }
+
+    public String getPushEnable() {
+        return String.valueOf(entity.isPushEnable());
+    }
+
+    public void setPushEnable(String pushEnable) {
+        log.info("setPushEnable: " + pushEnable);
+        update(it -> it.setPushEnable(Boolean.parseBoolean(pushEnable)));
+    }
 
     @Override
     public boolean isEnabled() {
@@ -134,6 +151,18 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
     }
 
     @Override
+    public Long getCreatedTimestamp() {
+        return Optional.ofNullable(entity.getCreatedAt())
+                .map(Timestamp::getTime)
+                .orElse(null);
+    }
+
+    @Override
+    public void setCreatedTimestamp(Long timestamp) {
+        update(it -> it.setCreatedAt(Timestamp.from(Instant.ofEpochMilli(timestamp))));
+    }
+
+    @Override
     public void setSingleAttribute(String name, String value) {
         switch (name) {
             case Constants.UserAttributes.LAST_NAME -> setLastName(value);
@@ -144,6 +173,9 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
             case Constants.UserAttributes.EXPIRY_DATE -> setExpiryDate(value);
             case Constants.UserAttributes.SESSION_ID -> setSessionId((value));
             case Constants.UserAttributes.MANZANA_ID -> setManzanaId((value));
+            case Constants.UserAttributes.REGION -> setRegion(value);
+            case Constants.UserAttributes.PUSH_ENABLE -> setPushEnable(value);
+
             default -> super.setSingleAttribute(name, value);
         }
     }
@@ -171,6 +203,8 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
             case Constants.UserAttributes.EXPIRY_DATE -> setExpiryDate(value);
             case Constants.UserAttributes.SESSION_ID -> setSessionId(value);
             case Constants.UserAttributes.MANZANA_ID -> setManzanaId(value);
+            case Constants.UserAttributes.REGION -> setRegion(value);
+            case Constants.UserAttributes.PUSH_ENABLE -> setPushEnable(value);
             default -> super.setAttribute(name, values);
         }
     }
@@ -186,6 +220,9 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
             case Constants.UserAttributes.EXPIRY_DATE -> getExpiryDate();
             case Constants.UserAttributes.SESSION_ID -> getSessionId();
             case Constants.UserAttributes.MANZANA_ID -> getManzanaId();
+            case Constants.UserAttributes.REGION -> getRegion();
+            case Constants.UserAttributes.PUSH_ENABLE -> getPushEnable();
+
             default -> super.getFirstAttribute(name);
         };
     }
@@ -203,6 +240,8 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
         all.add(Constants.UserAttributes.EXPIRY_DATE, getExpiryDate());
         all.add(Constants.UserAttributes.SESSION_ID, getSessionId());
         all.add(Constants.UserAttributes.MANZANA_ID, getManzanaId());
+        all.add(Constants.UserAttributes.REGION, getRegion());
+        all.add(Constants.UserAttributes.PUSH_ENABLE, getPushEnable());
         return all;
     }
 
@@ -218,6 +257,8 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
             case Constants.UserAttributes.EXPIRY_DATE -> Stream.of(getExpiryDate());
             case Constants.UserAttributes.SESSION_ID -> Stream.of(getSessionId());
             case Constants.UserAttributes.MANZANA_ID -> Stream.of(getManzanaId());
+            case Constants.UserAttributes.REGION -> Stream.of(getRegion());
+            case Constants.UserAttributes.PUSH_ENABLE -> Stream.of(getPushEnable());
             default -> super.getAttributeStream(name);
         };
     }
