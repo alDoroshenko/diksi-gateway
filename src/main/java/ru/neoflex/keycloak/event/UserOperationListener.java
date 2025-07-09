@@ -14,8 +14,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.provider.ManzanaProvider;
-import ru.neoflex.keycloak.storage.UserRepository;
-import ru.neoflex.keycloak.util.*;
+import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.SessionUtil;
+import ru.neoflex.keycloak.util.UserUtil;
 
 
 @Slf4j
@@ -52,8 +53,7 @@ public class UserOperationListener implements EventListenerProvider {
             log.error("Can't get ComponentModel");
             return;
         }
-        UserRepository userRepository = new UserRepository(model);
-        ManzanaProvider manzanaProvider = new ManzanaProvider(config, user, userRepository);
+        ManzanaProvider manzanaProvider = new ManzanaProvider(config, user);
         try {
             manzanaProvider.execute();
         } catch (ManzanaGatewayException e) {

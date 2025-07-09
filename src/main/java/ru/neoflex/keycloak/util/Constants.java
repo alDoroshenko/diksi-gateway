@@ -6,7 +6,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Constants {
     public interface SmsAuthConstants {
-        String CODE = "code";
         String CODE_LENGTH = "length";
         String CODE_TTL = "ttl";
         String SENDER_ID = "senderId";
@@ -50,26 +49,4 @@ public class Constants {
         String CUSTOM_DIRECT_GRANT_FLOW = "direct grant with sms";
         String DEFAULT_USER_PASSWORD = "1";
     }
-
-    public interface UserStorage {
-        String URL = "userStorageUrl";
-        String USERNAME = "userStorageUsername";
-        String PASSWORD = "userStoragePassword";
-    }
-
-    public interface dbColumn {
-        String USERMAME = "username";
-        String PASSWORD = "password";
-        String EMAIL = "email";
-        String BIRTHDAY = "birthday";
-        String FIRST_NAME = "first_name";
-        String LAST_NAME = "last_name";
-        String SMS_CODE = "sms_code";
-        String EXPIRY_DATE = "expiry_date";
-        String SESSION_ID = "session_id";
-        String MANZANA_ID = "manzana_id";
-        String ENABLED = "enabled";
-    }
-
-
 }

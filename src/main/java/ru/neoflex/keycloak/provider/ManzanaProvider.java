@@ -7,7 +7,6 @@ import ru.neoflex.keycloak.ManzanaConfiguration;
 import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaService;
 import ru.neoflex.keycloak.gateway.manzana.ManzanaServiceFactory;
-import ru.neoflex.keycloak.storage.UserRepository;
 import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.UserUtil;
 
@@ -19,7 +18,6 @@ import java.util.Map;
 public class ManzanaProvider {
     private final ManzanaService manzanaService;
     private final UserModel user;
-    private final UserRepository userRepository;
 
     public void execute() throws ManzanaGatewayException {
         if (user.getFirstAttribute(Constants.UserAttributes.MANZANA_ID) == null) {
@@ -31,11 +29,9 @@ public class ManzanaProvider {
             UserUtil.saveAttributes(attributes, user);
         }
         else {
-            log.info("user already exists in manzana");
+            log.info("user {} already exists in manzana",UserUtil.maskString(user.getUsername()));
         }
-        userRepository.updateEntity(user);
     }
-
 
     private String registerManzanaUser() throws ManzanaGatewayException {
         String manzanaId = manzanaService.register(user);
@@ -49,9 +45,8 @@ public class ManzanaProvider {
         return sessionId;
     }
 
-    public ManzanaProvider(AuthenticatorConfigModel config, UserModel user, UserRepository userRepository) {
+    public ManzanaProvider(AuthenticatorConfigModel config, UserModel user) {
         this.user = user;
-        this.userRepository = userRepository;
         this.manzanaService = ManzanaServiceFactory.get(new ManzanaConfiguration(config));
     }
 

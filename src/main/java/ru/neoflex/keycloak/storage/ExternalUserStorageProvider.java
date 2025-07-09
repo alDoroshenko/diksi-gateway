@@ -14,7 +14,9 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-import ru.neoflex.keycloak.model.ExteranalUser;
+import ru.neoflex.keycloak.jpa.entity.ExteranalUser;
+import ru.neoflex.keycloak.jpa.repository.UserJPARepository;
+import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.UserUtil;
 
 import java.util.HashMap;
@@ -30,14 +32,14 @@ public class ExternalUserStorageProvider implements
         , UserRegistrationProvider {
     private final KeycloakSession session;
     private final ComponentModel model;
-    private final UserRepository userRepository;
+    private final UserJPARepository userRepository;
     private Map<String, UserModel> loadedUsers = new HashMap<>();
 
-    public ExternalUserStorageProvider(KeycloakSession session, ComponentModel model) {
+    public ExternalUserStorageProvider(KeycloakSession session, ComponentModel model, UserJPARepository userRepository) {
         log.info("Creating new PropertyFileUserStorageProvider instance");
         this.session = session;
         this.model = model;
-        this.userRepository = new UserRepository(model);
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class ExternalUserStorageProvider implements
         if (user == null) {
             ExteranalUser exteranalUser = userRepository.getUserByUsername(username);
             if (exteranalUser != null) {
-                user = new ExternalUserAdapter(session, realm, model, exteranalUser);
+                user = new ExternalUserAdapter(session, realm, model, exteranalUser,userRepository);
                 loadedUsers.put(username, user);
                 return user;
             }
@@ -73,13 +75,17 @@ public class ExternalUserStorageProvider implements
         if (user == null) {
             ExteranalUser exteranalUser = userRepository.getUserByEmail(email);
             if (exteranalUser != null) {
-                user = new ExternalUserAdapter(session, realm, model, exteranalUser);
+                user = new ExternalUserAdapter(session, realm, model, exteranalUser,userRepository);
                 loadedUsers.put(email, user);
                 return user;
             }
             log.info("could not find by email: {}", email);
         }
         return user;
+    }
+    @Override
+    public int getUsersCount(RealmModel realm) {
+        return userRepository.count();
     }
 
     @Override
@@ -124,10 +130,10 @@ public class ExternalUserStorageProvider implements
         String search = params.get(UserModel.SEARCH);
         String lower = search != null ? search.toLowerCase() : "";
 
-        Stream<UserModel> userStream = userRepository.getAllUsers().stream()
+        Stream<UserModel> userStream = userRepository.findAll().stream()
                 .filter(userEntity -> userEntity.getUsername().toLowerCase().contains(lower) ||
                         userEntity.getEmail().toLowerCase().contains(lower))
-                .map(entity -> new ExternalUserAdapter(session, realm, model, entity));
+                .map(entity -> new ExternalUserAdapter(session, realm, model, entity,userRepository));
         // Применяем постраничный вывод
         if (firstResult != null) {
             userStream = userStream.skip(firstResult);
@@ -153,14 +159,20 @@ public class ExternalUserStorageProvider implements
         log.info("addUser: {}", UserUtil.maskString(username));
         ExteranalUser exteranalUser = new ExteranalUser();
         exteranalUser.setUsername(username);
+        exteranalUser.setPassword(Constants.KeycloakConfiguration.DEFAULT_USER_PASSWORD);
         userRepository.save(exteranalUser);
-        return new ExternalUserAdapter(session, realm, model, exteranalUser);
+        return new ExternalUserAdapter(session, realm, model, exteranalUser,userRepository);
     }
 
     @Override
     public boolean removeUser(RealmModel realmModel, UserModel user) {
         log.info("removeUser: {}", UserUtil.maskString(user.getUsername()));
-        String externalId = StorageId.externalId(user.getId());
-        return userRepository.delete(externalId);
+        final ExteranalUser exteranalUser = userRepository.getUserByUsername(user.getUsername());
+        if (exteranalUser == null) {
+            log.info("Tried to delete invalid user with ID " + user.getId());
+            return false;
+        }
+        userRepository.delete(exteranalUser);
+        return true;
     }
 }

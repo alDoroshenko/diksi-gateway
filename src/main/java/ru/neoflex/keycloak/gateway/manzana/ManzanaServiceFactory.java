@@ -33,11 +33,16 @@ public class ManzanaServiceFactory {
                     user.setLastName("SimulatorLN");
                     user.setBirthDate(new Date().toString());
                     user.setId(UUID.randomUUID().toString());
-                    log.info("***** SIMULATION MODE *****,getUser method was called," +
-                            "get user from manzana : {}", user);
+
                     if (Long.parseLong(phone)%2==0){
+                        log.info("***** SIMULATION MODE *****,getUser method was called," +
+                                "get user from manzana : {}", user);
                         return user;
-                    } else return null;
+                    } else {
+                        log.info("***** SIMULATION MODE *****,getUser method was called," +
+                                "user not found in manzana");
+                        return null;
+                    }
                 }
 
                 @Override
