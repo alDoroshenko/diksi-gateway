@@ -29,7 +29,7 @@ public class ManzanaProvider {
             UserUtil.saveAttributes(attributes, user);
         }
         else {
-            log.info("user already exists in manzana");
+            log.info("user {} already exists in manzana",UserUtil.maskString(user.getUsername()));
         }
     }
 

@@ -14,7 +14,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import ru.neoflex.keycloak.exception.ManzanaGatewayException;
 import ru.neoflex.keycloak.provider.ManzanaProvider;
-import ru.neoflex.keycloak.util.*;
+import ru.neoflex.keycloak.util.Constants;
+import ru.neoflex.keycloak.util.SessionUtil;
+import ru.neoflex.keycloak.util.UserUtil;
 
 
 @Slf4j

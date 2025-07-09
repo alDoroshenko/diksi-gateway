@@ -155,10 +155,6 @@ public class ExternalUserAdapter extends AbstractUserAdapterFederatedStorage {
             case Constants.UserAttributes.FIRST_NAME -> setFirstName(null);
             case Constants.UserAttributes.EMAIL -> setEmail(null);
             case Constants.UserAttributes.BIRTHDAY -> setBirthDate(null);
-            case Constants.UserAttributes.SMS_CODE -> setSmsCode(null);
-            case Constants.UserAttributes.EXPIRY_DATE -> setExpiryDate(null);
-            case Constants.UserAttributes.SESSION_ID -> setSessionId(null);
-            case Constants.UserAttributes.MANZANA_ID -> setManzanaId(null);
             default -> super.removeAttribute(name);
         }
     }
