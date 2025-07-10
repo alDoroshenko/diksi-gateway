@@ -18,6 +18,8 @@ import ru.neoflex.keycloak.util.Constants;
 import ru.neoflex.keycloak.util.SessionUtil;
 import ru.neoflex.keycloak.util.UserUtil;
 
+//TODo
+// после добавления REST-Endpoint больше не нужен. Удалить после проверки и тестов на стенде
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,11 +32,11 @@ public class UserOperationListener implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
-        if (ResourceType.USER.equals(adminEvent.getResourceType())
+        /*if (ResourceType.USER.equals(adminEvent.getResourceType())
                 && OperationType.UPDATE.equals(adminEvent.getOperationType())) {
-            log.info("user update event");
+
             updateUser(adminEvent);
-        }
+          }  */
     }
 
     @Override
@@ -48,11 +50,6 @@ public class UserOperationListener implements EventListenerProvider {
         AuthenticatorConfigModel config = SessionUtil.getAuthenticatorConfig(realm,
                 Constants.KeycloakConfiguration.SMS_AUTHENTICATOR_ID,
                 Constants.KeycloakConfiguration.CUSTOM_DIRECT_GRANT_FLOW);
-        ComponentModel model = getComponentModel(realm, user);
-        if (model == null) {
-            log.error("Can't get ComponentModel");
-            return;
-        }
         ManzanaProvider manzanaProvider = new ManzanaProvider(config, user);
         try {
             manzanaProvider.execute();
@@ -65,14 +62,6 @@ public class UserOperationListener implements EventListenerProvider {
         String resourcePath = adminEvent.getResourcePath();
         String userId = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
         return session.users().getUserById(session.getContext().getRealm(), userId);
-    }
-
-    private ComponentModel getComponentModel(RealmModel realm, UserModel user) {
-        String federationLink = user.getFederationLink();
-        if (federationLink != null) {
-            return realm.getComponent(federationLink);
-        }
-        return null;
     }
 
 }
